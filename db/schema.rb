@@ -10,9 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_194656) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_202542) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "maintenance_records", force: :cascade do |t|
+    t.integer "cost_cents"
+    t.datetime "created_at", null: false
+    t.string "currency", default: "COP", null: false
+    t.text "notes"
+    t.string "part_brand"
+    t.bigint "part_type_id", null: false
+    t.date "performed_on", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "usage_at_service", precision: 12, scale: 2, null: false
+    t.bigint "vehicle_id", null: false
+    t.index ["part_type_id"], name: "index_maintenance_records_on_part_type_id"
+    t.index ["vehicle_id", "part_type_id", "usage_at_service"], name: "index_maintenance_records_on_vehicle_part_and_usage"
+    t.index ["vehicle_id"], name: "index_maintenance_records_on_vehicle_id"
+  end
 
   create_table "part_types", force: :cascade do |t|
     t.string "applicable_vehicle_types", default: [], null: false, array: true
@@ -43,4 +59,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_194656) do
     t.index ["vehicle_type"], name: "index_vehicles_on_vehicle_type"
     t.index ["vin"], name: "index_vehicles_on_vin", unique: true, where: "(vin IS NOT NULL)"
   end
+
+  add_foreign_key "maintenance_records", "part_types"
+  add_foreign_key "maintenance_records", "vehicles"
 end
