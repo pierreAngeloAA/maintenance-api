@@ -14,6 +14,8 @@ class PartType < ApplicationRecord
     lighting
   ].freeze
 
+  has_many :reliability_profiles, dependent: :destroy
+
   normalizes :code, with: ->(code) { code.strip.downcase }
 
   validates :code, presence: true, uniqueness: true
