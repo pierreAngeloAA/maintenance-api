@@ -93,6 +93,34 @@ Devuelve el vehiculo mas `partTypes`, las piezas del catalogo que aplican a esa 
 { "error": "not_found" }
 ```
 
+### `GET /api/v1/vehicles/:vehicle_id/recalls`
+
+Recalls de seguridad reportados por NHTSA. **Siempre responde `200` con una lista**, aunque este
+vacia: como NHTSA solo cubre EE.UU., no encontrar recalls es un resultado normal y no significa que
+el vehiculo no tenga problemas. La respuesta se cachea 24 horas.
+
+```json
+{
+  "vehicleId": 1,
+  "recalls": [
+    {
+      "campaignNumber": "20V771000",
+      "manufacturer": "Honda (American Honda Motor Co.)",
+      "component": "ELECTRICAL SYSTEM:BODY CONTROL MODULE:SOFTWARE",
+      "summary": "...",
+      "consequence": "...",
+      "remedy": "...",
+      "reportedOn": "2020-10-12",
+      "parkIt": false,
+      "parkOutside": false
+    }
+  ]
+}
+```
+
+`parkIt` y `parkOutside` son las banderas graves de NHTSA: el vehiculo no deberia manejarse, o no
+deberia parquearse bajo techo por riesgo de incendio.
+
 ### `GET /api/v1/vin_lookups/:vin`
 
 Autocompletado del formulario a partir del VIN. **Siempre responde `200`**, incluso cuando no
