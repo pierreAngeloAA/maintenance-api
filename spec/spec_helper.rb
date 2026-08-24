@@ -8,7 +8,6 @@ SimpleCov.start "rails" do
   skip "/spec/"
   # Clases base generadas por Rails, sin logica propia todavia.
   # Quitar cada skip en cuanto el archivo tenga codigo real.
-  skip "app/controllers/application_controller.rb"
   skip "app/jobs/application_job.rb"
   skip "app/mailers/application_mailer.rb"
   skip "app/models/application_record.rb"

@@ -1,0 +1,74 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/JH2PC35051M200020?format=json
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.3
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Access-Control-Expose-Headers:
+      - Request-Context
+      Cache-Control:
+      - no-cache
+      Expires:
+      - "-1"
+      Pragma:
+      - no-cache
+      Request-Context:
+      - appId=cid-v1:39f1cd0a-de7e-435f-bf7d-39de930d88c6
+      Vary:
+      - Accept-Encoding
+      Date:
+      - Mon, 24 Aug 2026 19:49:53 GMT
+      Content-Length:
+      - '3986'
+      Connection:
+      - keep-alive
+      Strict-Transport-Security:
+      - max-age=31536000 ; includeSubDomains ; preload
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+    body:
+      encoding: UTF-8
+      string: '{"Count":1,"Message":"Results returned successfully. NOTE: Any missing
+        decoded values should be interpreted as NHTSA does not have data on the specific
+        variable. Missing value should NOT be interpreted as an indication that a
+        feature or technology is unavailable for a vehicle.","SearchCriteria":"VIN(s):
+        JH2PC35051M200020","Results":[{"ABS":"","ActiveSafetySysNote":"","AdaptiveCruiseControl":"Not
+        Applicable","AdaptiveDrivingBeam":"Not Applicable","AdaptiveHeadlights":"","AdditionalErrorText":"","AirBagLocCurtain":"","AirBagLocFront":"","AirBagLocKnee":"","AirBagLocSeatCushion":"","AirBagLocSide":"","AutoReverseSystem":"Not
+        Applicable","AutomaticPedestrianAlertingSound":"Not Applicable","AxleConfiguration":"","Axles":"","BasePrice":"","BatteryA":"","BatteryA_to":"","BatteryCells":"","BatteryInfo":"","BatteryKWh":"","BatteryKWh_to":"","BatteryModules":"","BatteryPacks":"","BatteryType":"","BatteryV":"","BatteryV_to":"","BedLengthIN":"","BedType":"Not
+        Applicable","BlindSpotIntervention":"","BlindSpotMon":"Not Applicable","BodyCabType":"Not
+        Applicable","BodyClass":"Motorcycle - Sport","BrakeSystemDesc":"","BrakeSystemType":"","BusFloorConfigType":"Not
+        Applicable","BusLength":"","BusType":"Not Applicable","CAN_AACN":"Not Applicable","CIB":"Not
+        Applicable","CashForClunkers":"","ChargerLevel":"","ChargerPowerKW":"","CombinedBrakingSystem":"","CoolingType":"","CurbWeightLB":"","CustomMotorcycleType":"","DaytimeRunningLight":"Not
+        Applicable","DestinationMarket":"49 States (Except California)","DisplacementCC":"599","DisplacementCI":"36.553222712","DisplacementL":"0.599000","Doors":"","DriveType":"","DriverAssist":"","DynamicBrakeSupport":"Not
+        Applicable","EDR":"Not Applicable","ESC":"","EVDriveUnit":"","ElectrificationLevel":"","EngineConfiguration":"","EngineCycles":"4","EngineCylinders":"4","EngineHP":"108.0","EngineHP_to":"","EngineKW":"","EngineManufacturer":"","EngineModel":"","EntertainmentSystem":"","ErrorCode":"0","ErrorText":"0
+        - VIN decoded clean. Check Digit (9th position) is correct","ForwardCollisionWarning":"Not
+        Applicable","FuelInjectionType":"","FuelTankMaterial":"","FuelTankType":"","FuelTypePrimary":"Gasoline","FuelTypeSecondary":"","GCWR":"","GCWR_to":"","GVWR":"Class
+        1A: 3,000 lb or less (1,360 kg or less)","GVWR_to":"","KeylessIgnition":"","LaneCenteringAssistance":"","LaneDepartureWarning":"Not
+        Applicable","LaneKeepSystem":"Not Applicable","LowerBeamHeadlampLightSource":"Not
+        Applicable","Make":"HONDA","MakeID":"474","Manufacturer":"HONDA MOTOR CO.,
+        LTD.","ManufacturerId":"987","Model":"CBR600F","ModelID":"37149","ModelYear":"2001","MotorcycleChassisType":"","MotorcycleSuspensionType":"","NCSABodyType":"","NCSAMake":"","NCSAMapExcApprovedBy":"","NCSAMapExcApprovedOn":"","NCSAMappingException":"","NCSAModel":"","NCSANote":"","NonLandUse":"","Note":"","OtherBusInfo":"","OtherEngineInfo":"","OtherMotorcycleInfo":"","OtherRestraintSystemInfo":"","OtherTrailerInfo":"","ParkAssist":"Not
+        Applicable","PedestrianAutomaticEmergencyBraking":"Not Applicable","PlantCity":"HAMAMATSU","PlantCompanyName":"HAMAMATSU
+        FACTORY","PlantCountry":"JAPAN","PlantState":"SHIZUOKA","PossibleValues":"","Pretensioner":"","RearAutomaticEmergencyBraking":"","RearCrossTrafficAlert":"Not
+        Applicable","RearVisibilitySystem":"Not Applicable","SAEAutomationLevel":"","SAEAutomationLevel_to":"","SeatBeltsAll":"","SeatRows":"","Seats":"","SemiautomaticHeadlampBeamSwitching":"Not
+        Applicable","Series":"CBR600F4\/F4i","Series2":"","SteeringLocation":"","SuggestedVIN":"","TPMS":"","TopSpeedMPH":"","TrackWidth":"","TractionControl":"","TrailerBodyType":"Not
+        Applicable","TrailerLength":"","TrailerType":"Not Applicable","TransmissionSpeeds":"","TransmissionStyle":"","Trim":"","Trim2":"","Turbo":"","VIN":"JH2PC35051M200020","ValveTrainDesign":"","VehicleDescriptor":"JH2PC350*1M","VehicleType":"MOTORCYCLE","WheelBaseLong":"","WheelBaseShort":"","WheelBaseType":"","WheelSizeFront":"","WheelSizeRear":"","WheelieMitigation":"","Wheels":"","Windows":""}]}'
+  recorded_at: Mon, 24 Aug 2026 19:49:53 GMT
+recorded_with: VCR 6.4.0
