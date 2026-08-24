@@ -10,9 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_194534) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_194656) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "part_types", force: :cascade do |t|
+    t.string "applicable_vehicle_types", default: [], null: false, array: true
+    t.string "category", null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["applicable_vehicle_types"], name: "index_part_types_on_applicable_vehicle_types", using: :gin
+    t.index ["category"], name: "index_part_types_on_category"
+    t.index ["code"], name: "index_part_types_on_code", unique: true
+  end
 
   create_table "vehicles", force: :cascade do |t|
     t.string "city"

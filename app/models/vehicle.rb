@@ -35,6 +35,11 @@ class Vehicle < ApplicationRecord
 
   validate :usage_unit_matches_vehicle_type
 
+  # Piezas del catalogo que aplican a esta clase de vehiculo.
+  def part_types
+    PartType.for_vehicle_type(vehicle_type)
+  end
+
   private
 
   def usage_unit_matches_vehicle_type
