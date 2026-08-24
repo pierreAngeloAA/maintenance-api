@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_202542) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_203256) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_202542) do
     t.index ["code"], name: "index_part_types_on_code", unique: true
   end
 
+  create_table "reliability_profiles", force: :cascade do |t|
+    t.decimal "characteristic_life", precision: 12, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.string "life_unit", null: false
+    t.bigint "part_type_id", null: false
+    t.string "source", default: "engineering_estimate", null: false
+    t.datetime "updated_at", null: false
+    t.string "vehicle_type", null: false
+    t.decimal "weibull_shape", precision: 6, scale: 3, null: false
+    t.index ["part_type_id", "vehicle_type"], name: "index_reliability_profiles_on_part_type_id_and_vehicle_type", unique: true
+    t.index ["part_type_id"], name: "index_reliability_profiles_on_part_type_id"
+  end
+
   create_table "vehicles", force: :cascade do |t|
     t.string "city"
     t.datetime "created_at", null: false
@@ -62,4 +75,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_202542) do
 
   add_foreign_key "maintenance_records", "part_types"
   add_foreign_key "maintenance_records", "vehicles"
+  add_foreign_key "reliability_profiles", "part_types"
 end
