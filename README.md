@@ -31,9 +31,43 @@ bin/rails s
 
 La API queda en `http://localhost:3000`. Health check: `GET /up`.
 
+## Autenticacion
+
+Todos los endpoints exigen sesion, salvo el registro y el inicio de sesion. Se autentica con un
+token bearer:
+
+```bash
+curl -H "Authorization: Bearer <token>" http://localhost:3000/api/v1/vehicles
+```
+
+| endpoint | que hace |
+|---|---|
+| `POST /api/v1/users` | Registro. Devuelve el usuario y un token listo para usar. |
+| `POST /api/v1/sessions` | Inicio de sesion. Devuelve usuario y token. |
+| `DELETE /api/v1/sessions` | Cierra **esa** sesion; las otras sesiones del usuario siguen vivas. |
+| `GET /api/v1/me` | Usuario de la sesion actual. |
+
+```bash
+curl -X POST http://localhost:3000/api/v1/sessions \
+  -H "Content-Type: application/json" \
+  -d '{"session":{"email":"pierre@example.com","password":"unaClaveSegura1"}}'
+```
+
+Detalles que importan:
+
+- En la base de datos se guarda el **digest** del token, nunca el token: leer la tabla `sessions` no
+  alcanza para hacerse pasar por nadie.
+- Credenciales invalidas siempre responden lo mismo (`{"error":"invalid_credentials"}`), sin
+  distinguir entre correo inexistente y contrasena equivocada: lo contrario revelaria quien esta
+  registrado.
+- Cada vehiculo pertenece a un usuario. Pedir el vehiculo de otro responde **404**, no 403, para no
+  confirmar que existe.
+- Los endpoints nacen protegidos: hay que marcarlos explicitamente con `allow_unauthenticated_access`
+  para abrirlos. Es preferible que un endpoint nuevo quede cerrado por olvido a que quede abierto.
+
 ## Endpoints
 
-Base: `/api/v1`. El API habla **camelCase** con el frontend (`vehicleType`, `usageValue`) y
+Base: `/api/v1`. Todos exigen la cabecera `Authorization: Bearer <token>`. El API habla **camelCase** con el frontend (`vehicleType`, `usageValue`) y
 snake_case internamente. Los decimales viajan como string (`"45000.0"`) para no perder precision.
 
 ### `GET /api/v1/vehicles`

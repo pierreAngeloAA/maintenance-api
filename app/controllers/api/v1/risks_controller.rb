@@ -3,7 +3,7 @@ module Api
     # Riesgo de falla por pieza, ordenado de mayor a menor.
     class RisksController < ApplicationController
       def show
-        vehicle = Vehicle.find(params[:vehicle_id])
+        vehicle = current_user.vehicles.find(params[:vehicle_id])
         risks = Reliability::RiskCalculator.new(vehicle, horizon: horizon).call
 
         render json: {
