@@ -10,8 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 0) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_194534) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
+  create_table "vehicles", force: :cascade do |t|
+    t.string "city"
+    t.datetime "created_at", null: false
+    t.string "make", null: false
+    t.string "model", null: false
+    t.integer "model_year", null: false
+    t.string "plate"
+    t.jsonb "specs", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.string "usage_unit", default: "km", null: false
+    t.decimal "usage_value", precision: 12, scale: 2, default: "0.0", null: false
+    t.string "vehicle_type", null: false
+    t.string "vin"
+    t.index ["plate"], name: "index_vehicles_on_plate"
+    t.index ["vehicle_type"], name: "index_vehicles_on_vehicle_type"
+    t.index ["vin"], name: "index_vehicles_on_vin", unique: true, where: "(vin IS NOT NULL)"
+  end
 end
