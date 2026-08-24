@@ -24,7 +24,7 @@ module Api
       private
 
       def vehicle
-        @vehicle ||= Vehicle.find(params[:vehicle_id])
+        @vehicle ||= current_user.vehicles.find(params[:vehicle_id])
       end
 
       def maintenance_record_params

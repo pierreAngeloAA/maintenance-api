@@ -7,7 +7,7 @@ module Api
     # resultado normal y no un error.
     class RecallsController < ApplicationController
       def show
-        vehicle = Vehicle.find(params[:vehicle_id])
+        vehicle = current_user.vehicles.find(params[:vehicle_id])
         recalls = Nhtsa::RecallsFetcher.new.call(
           make: vehicle.make,
           model: vehicle.model,

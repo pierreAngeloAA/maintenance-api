@@ -2,19 +2,19 @@ module Api
   module V1
     class VehiclesController < ApplicationController
       def index
-        vehicles = Vehicle.order(created_at: :desc)
+        vehicles = current_user.vehicles.order(created_at: :desc)
 
         render json: vehicles.map { |vehicle| VehicleSerializer.call(vehicle) }
       end
 
       def show
-        vehicle = Vehicle.find(params[:id])
+        vehicle = current_user.vehicles.find(params[:id])
 
         render json: VehicleSerializer.call(vehicle, include_part_types: true)
       end
 
       def create
-        vehicle = Vehicle.new(vehicle_params)
+        vehicle = current_user.vehicles.new(vehicle_params)
 
         if vehicle.save
           render json: VehicleSerializer.call(vehicle), status: :created

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_203256) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_210852) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -55,6 +55,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_203256) do
     t.index ["part_type_id"], name: "index_reliability_profiles_on_part_type_id"
   end
 
+  create_table "sessions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "token_digest", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["token_digest"], name: "index_sessions_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "name"
+    t.string "password_digest", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+  end
+
   create_table "vehicles", force: :cascade do |t|
     t.string "city"
     t.datetime "created_at", null: false
@@ -66,9 +84,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_203256) do
     t.datetime "updated_at", null: false
     t.string "usage_unit", default: "km", null: false
     t.decimal "usage_value", precision: 12, scale: 2, default: "0.0", null: false
+    t.bigint "user_id", null: false
     t.string "vehicle_type", null: false
     t.string "vin"
     t.index ["plate"], name: "index_vehicles_on_plate"
+    t.index ["user_id"], name: "index_vehicles_on_user_id"
     t.index ["vehicle_type"], name: "index_vehicles_on_vehicle_type"
     t.index ["vin"], name: "index_vehicles_on_vin", unique: true, where: "(vin IS NOT NULL)"
   end
@@ -76,4 +96,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_203256) do
   add_foreign_key "maintenance_records", "part_types"
   add_foreign_key "maintenance_records", "vehicles"
   add_foreign_key "reliability_profiles", "part_types"
+  add_foreign_key "sessions", "users"
+  add_foreign_key "vehicles", "users"
 end
