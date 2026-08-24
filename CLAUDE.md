@@ -41,6 +41,12 @@ El frontend Angular vive en el repo separado `maintenance-web`.
 Toda llamada externa va en `app/services/` y **siempre** se testea con VCR o WebMock, nunca
 pegandole a la API real desde los specs.
 
+**Limite importante de NHTSA:** solo cubre vehiculos homologados en EE.UU. Las motos que se venden
+en Colombia (AKT, Bajaj, TVS, Auteco, Victory) **no estan**. Por eso el decode de VIN es un
+**autocompletado oportunista** y nunca un requisito: si NHTSA no conoce el vehiculo o esta caida, el
+registro manual tiene que seguir funcionando igual. Timeouts cortos, y `vin` es opcional en el
+modelo.
+
 ## 4. Setup local
 
 ```bash
@@ -119,8 +125,28 @@ Los commits no llevan firma ni co-autoria de herramientas.
 - Sprints = Milestones
 - Cada issue lleva criterios de aceptacion (Given/When/Then) y checklist de Definition of Done
 
-## 7. Convenciones de codigo
+## 7. Modelo de dominio
 
+La app arranca con **autos y motos**, pero el esquema tiene que soportar despues otras clases de
+vehiculo (incluidas aereas y maritimas). Las reglas que sostienen eso:
+
+- El modelo se llama `Vehicle`, tabla `vehicles`. **Una sola tabla, sin STI**: nada de clases `Car`
+  o `Motorcycle`. Lo especifico de una clase va en `jsonb specs`.
+- `vehicle_type` es un enum **de strings** (`car`, `motorcycle` hoy). Strings y no enteros para que
+  agregar valores no dependa del orden.
+- **El uso se guarda como `usage_value` + `usage_unit`, nunca como kilometraje suelto.** `km` para
+  terrestres, `hours` para lo aereo/maritimo que venga. Las curvas de riesgo consumen esta variable:
+  amarrarla a km amarraria toda la matematica del producto.
+- Las piezas viven en el catalogo `part_types`, **nunca hardcodeadas**. Una moto tiene cadena y kit
+  de arrastre; un auto tiene correa de repartición.
+- `vin` es **opcional** y unico solo cuando esta presente (indice unico parcial). Validar 17
+  caracteres sin I, O ni Q (estandar ISO 3779).
+- `model_year`, no `year`: reservada en SQL y ambigua frente al ano de registro.
+
+## 8. Convenciones de codigo
+
+- Codigo y base de datos **en ingles**; los textos en espanol viven en el frontend. No se mezclan
+  los dos idiomas dentro del mismo modelo.
 - Logica de negocio en `app/services/`, no en controllers ni models gordos.
 - Los controllers responden JSON y nada mas; sin logica de dominio.
 - Los calculos de confiabilidad (hazard functions, curvas de supervivencia) van en objetos propios
