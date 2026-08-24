@@ -31,6 +31,93 @@ bin/rails s
 
 La API queda en `http://localhost:3000`. Health check: `GET /up`.
 
+## Endpoints
+
+Base: `/api/v1`. El API habla **camelCase** con el frontend (`vehicleType`, `usageValue`) y
+snake_case internamente. Los decimales viajan como string (`"45000.0"`) para no perder precision.
+
+### `GET /api/v1/vehicles`
+
+Lista los vehiculos, el mas reciente primero.
+
+```bash
+curl http://localhost:3000/api/v1/vehicles
+```
+
+### `POST /api/v1/vehicles`
+
+Crea un vehiculo. **El VIN es opcional**: una moto colombiana se registra sin el.
+
+```bash
+curl -X POST http://localhost:3000/api/v1/vehicles \
+  -H "Content-Type: application/json" \
+  -d '{"vehicle":{"vehicleType":"motorcycle","make":"AKT","model":"NKD 125",
+       "modelYear":2021,"plate":"abc12d","usageValue":12000,"usageUnit":"km",
+       "city":"Medellin"}}'
+```
+
+```json
+{
+  "id": 2,
+  "vehicleType": "motorcycle",
+  "make": "AKT",
+  "model": "NKD 125",
+  "modelYear": 2021,
+  "vin": null,
+  "plate": "ABC12D",
+  "usageValue": "12000.0",
+  "usageUnit": "km",
+  "city": "Medellin",
+  "specs": {},
+  "createdAt": "2026-08-24T19:56:42.968Z",
+  "updatedAt": "2026-08-24T19:56:42.968Z"
+}
+```
+
+`201` si se creo, `422` con los errores por campo si no:
+
+```json
+{ "errors": { "make": ["can't be blank"],
+              "modelYear": ["must be greater than or equal to 1900"] } }
+```
+
+Los mensajes de error **no son texto de interfaz**: el frontend arma el mensaje en espanol a
+partir del nombre del campo.
+
+### `GET /api/v1/vehicles/:id`
+
+Devuelve el vehiculo mas `partTypes`, las piezas del catalogo que aplican a esa clase de vehiculo
+(una moto trae cadena y kit de arrastre; un auto trae correa de repartición). `404` si no existe:
+
+```json
+{ "error": "not_found" }
+```
+
+### `GET /api/v1/vin_lookups/:vin`
+
+Autocompletado del formulario a partir del VIN. **Siempre responde `200`**, incluso cuando no
+encuentra el vehiculo: que NHTSA no lo conozca no es un error, y el registro manual tiene que
+seguir funcionando.
+
+```bash
+curl http://localhost:3000/api/v1/vin_lookups/JH2PC35051M200020
+```
+
+```json
+{ "vin": "JH2PC35051M200020", "found": true, "make": "HONDA",
+  "model": "CBR600F", "modelYear": 2001, "vehicleType": "motorcycle" }
+```
+
+Con un vehiculo que NHTSA no cubre — tipico en Colombia, incluidos los Renault ensamblados aca:
+
+```json
+{ "vin": "9FBLSRB56KM123456", "found": false, "make": null,
+  "model": null, "modelYear": null, "vehicleType": null }
+```
+
+El servicio no sale a la red si el VIN no cumple el formato ISO 3779, y ante timeout o caida de
+NHTSA responde igual con `found: false`.
+
 ## Tests
 
 ```bash
