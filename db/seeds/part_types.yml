@@ -1,0 +1,115 @@
+# Catalogo base de tipos de pieza.
+#
+# - `code` es el identificador estable, en ingles: lo usa el codigo y no cambia.
+# - `name` es lo que ve el usuario, en espanol: es contenido, no codigo.
+# - `applicable_vehicle_types` dice que clases de vehiculo llevan la pieza.
+#
+# Para soportar una clase nueva de vehiculo se agregan filas aca, no codigo.
+
+# --- Comunes a auto y moto ---
+- code: engine_oil
+  name: Aceite de motor
+  category: fluids
+  applicable_vehicle_types: [car, motorcycle]
+
+- code: oil_filter
+  name: Filtro de aceite
+  category: filters
+  applicable_vehicle_types: [car, motorcycle]
+
+- code: air_filter
+  name: Filtro de aire
+  category: filters
+  applicable_vehicle_types: [car, motorcycle]
+
+- code: spark_plugs
+  name: Bujias
+  category: engine
+  applicable_vehicle_types: [car, motorcycle]
+
+- code: brake_pads
+  name: Pastillas de freno
+  category: brakes
+  applicable_vehicle_types: [car, motorcycle]
+
+- code: brake_fluid
+  name: Liquido de frenos
+  category: fluids
+  applicable_vehicle_types: [car, motorcycle]
+
+- code: tires
+  name: Llantas
+  category: tires
+  applicable_vehicle_types: [car, motorcycle]
+
+- code: battery
+  name: Bateria
+  category: electrical
+  applicable_vehicle_types: [car, motorcycle]
+
+- code: headlight_bulb
+  name: Bombillo delantero
+  category: lighting
+  applicable_vehicle_types: [car, motorcycle]
+
+# --- Solo auto ---
+- code: timing_belt
+  name: Correa de repartición
+  category: engine
+  applicable_vehicle_types: [car]
+
+- code: serpentine_belt
+  name: Correa de accesorios
+  category: engine
+  applicable_vehicle_types: [car]
+
+- code: coolant
+  name: Refrigerante
+  category: fluids
+  applicable_vehicle_types: [car]
+
+- code: transmission_fluid
+  name: Aceite de caja
+  category: transmission
+  applicable_vehicle_types: [car]
+
+- code: cabin_filter
+  name: Filtro de cabina
+  category: filters
+  applicable_vehicle_types: [car]
+
+- code: wiper_blades
+  name: Plumillas
+  category: lighting
+  applicable_vehicle_types: [car]
+
+- code: shock_absorbers
+  name: Amortiguadores
+  category: suspension
+  applicable_vehicle_types: [car]
+
+# --- Solo moto ---
+- code: drive_chain
+  name: Cadena de transmision
+  category: transmission
+  applicable_vehicle_types: [motorcycle]
+
+- code: chain_sprocket_kit
+  name: Kit de arrastre
+  category: transmission
+  applicable_vehicle_types: [motorcycle]
+
+- code: clutch_cable
+  name: Guaya de clutch
+  category: transmission
+  applicable_vehicle_types: [motorcycle]
+
+- code: brake_shoes
+  name: Bandas de freno
+  category: brakes
+  applicable_vehicle_types: [motorcycle]
+
+- code: fork_oil
+  name: Aceite de barras
+  category: suspension
+  applicable_vehicle_types: [motorcycle]
