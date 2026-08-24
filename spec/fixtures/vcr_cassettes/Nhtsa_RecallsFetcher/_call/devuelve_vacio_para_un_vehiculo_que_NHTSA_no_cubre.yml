@@ -1,0 +1,60 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://api.nhtsa.gov/recalls/recallsByVehicle?make=akt&model=nkd&modelYear=2021
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.3
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 400
+      message: Bad Request
+    headers:
+      Content-Type:
+      - application/json;charset=UTF-8
+      Content-Length:
+      - '66'
+      X-Amzn-Requestid:
+      - a3509eae-34fa-4ff3-b39a-f6721d38af33
+      X-Amzn-Remapped-Connection:
+      - keep-alive
+      X-Amz-Apigw-Id:
+      - Cn6LdFmUoAMFc3A=
+      X-Amzn-Remapped-Date:
+      - Mon, 24 Aug 2026 20:04:50 GMT
+      X-Application-Context:
+      - application:production
+      Expires:
+      - Mon, 24 Aug 2026 20:04:50 GMT
+      Cache-Control:
+      - max-age=0, no-cache
+      Pragma:
+      - no-cache
+      Date:
+      - Mon, 24 Aug 2026 20:04:50 GMT
+      Connection:
+      - keep-alive
+      Set-Cookie:
+      - AWSALB=P8RFqSX7rvV8k8sBq/rGRP+qLkuf5YHAO6km7JJqokLW7Ak7zY6HSIl1sX/Xy+lpPnbZ7DVM4o3H2rtINC+PIPISP9JVgPHSZI9opwNYy/yIkSPaKC6NA8yL/43l;
+        Expires=Mon, 31 Aug 2026 20:04:50 GMT; Path=/
+      - AWSALBCORS=P8RFqSX7rvV8k8sBq/rGRP+qLkuf5YHAO6km7JJqokLW7Ak7zY6HSIl1sX/Xy+lpPnbZ7DVM4o3H2rtINC+PIPISP9JVgPHSZI9opwNYy/yIkSPaKC6NA8yL/43l;
+        Expires=Mon, 31 Aug 2026 20:04:50 GMT; Path=/; SameSite=None
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      Strict-Transport-Security:
+      - max-age=31536000 ; includeSubDomains ; preload
+    body:
+      encoding: UTF-8
+      string: '{"Count":0,"Message":"Results returned successfully","results":[]}'
+  recorded_at: Mon, 24 Aug 2026 20:04:50 GMT
+recorded_with: VCR 6.4.0

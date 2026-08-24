@@ -4,7 +4,10 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :vehicles, only: [ :index, :show, :create ]
+      resources :vehicles, only: [ :index, :show, :create ] do
+        # Recalls de seguridad reportados por NHTSA para ese vehiculo.
+        resource :recalls, only: :show, controller: "recalls"
+      end
 
       # Autocompletado del formulario. Responde 200 aunque NHTSA no conozca el
       # vehiculo: no encontrarlo no es un error.
