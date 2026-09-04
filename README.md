@@ -160,7 +160,8 @@ que se calcula el riesgo condicional; un valor invalido se ignora y se usa el tr
       "failureProbability": 0.0861,
       "conditionalRisk": 0.0298,
       "horizon": 1000,
-      "estimate": true
+      "estimate": true,
+      "contextFactor": 0.9
     }
   ]
 }
@@ -170,6 +171,43 @@ que se calcula el riesgo condicional; un valor invalido se ignora y se usa el tr
 - `conditionalRisk` = `1 - R(t+Δt)/R(t)`: riesgo de falla en el proximo tramo, dado que llego sana hasta `t`. **Es el numero util.**
 - `basis` dice de donde salio `t`: `last_service` (hay historial), `vehicle_total` (la pieza nunca se cambio) o `model_year` (pieza que se degrada con el tiempo, sin historial).
 - `estimate: true` significa que β y η todavia son estimaciones de ingenieria, no numeros calculados con datos de usuarios. **La interfaz tiene que decirlo.**
+- `contextFactor` es el ajuste por el contexto de la ciudad del vehiculo (ver abajo). `1.0` es sin ajuste.
+
+#### Ajuste por contexto
+
+El mismo repuesto no dura lo mismo en Bogota que en Barranquilla. Se modela como **vida acelerada**:
+
+```
+η_efectiva = η × Π(factores)
+```
+
+El contexto **no cambia la matematica del riesgo**: solo acorta la vida caracteristica de la pieza.
+Hoy se ajusta por dos dimensiones, resueltas desde `vehicles.city`:
+
+- **Terreno**: una ciudad montanosa castiga frenos, clutch y llantas.
+- **Clima**: el calor castiga la bateria y el sol y la humedad castigan los cauchos.
+
+Los factores viven en `config/context_factors.yml`, no en codigo: agregar una ciudad o recalibrar un
+castigo es editar YAML. **Un factor ausente vale 1,0 y nunca rompe el calculo**: un vehiculo sin
+ciudad, o en una ciudad que no esta en el catalogo, da exactamente el mismo resultado que antes de
+existir este ajuste.
+
+La misma moto AKT con 18.000 km, en dos ciudades:
+
+| pieza | Bogota | Barranquilla |
+|---|---|---|
+| Bandas de freno | 17,66% | 10,53% |
+| Cadena de transmision | 15,08% | 11,46% |
+| Guaya de clutch | 11,87% | 8,11% |
+| Bateria | 43,50% | **58,42%** |
+| Filtro de aceite | 99,14% | 99,14% |
+
+La inversion de la bateria es el punto: en la montana mandan los frenos, en el calor manda la
+bateria. El filtro de aceite no lo toca ningun factor y queda igual en las dos.
+
+Como los parametros de Weibull, **estos factores son estimaciones de ingenieria iniciales**, no
+datos medidos, y estan puestos para recalibrarse cuando haya volumen real de mantenimientos por
+ciudad.
 
 ### `GET /api/v1/vehicles/:vehicle_id/recalls`
 

@@ -5,6 +5,7 @@ module Reliability
   # Para cada pieza que aplica al vehiculo calcula:
   #
   #   t                     uso acumulado desde el ultimo cambio de esa pieza
+  #   n = eta x factores    vida caracteristica ajustada por el contexto del vehiculo
   #   R(t) = exp(-(t/n)^b)  probabilidad de que siga sana
   #   F(t) = 1 - R(t)       probabilidad de que ya haya llegado al final de su vida
   #   P = 1 - R(t+dt)/R(t)  riesgo de falla en el proximo tramo, dado que llego sana hasta t
@@ -23,7 +24,8 @@ module Reliability
       :failure_probability,
       :conditional_risk,
       :horizon,
-      :estimate
+      :estimate,
+      :context_factor
     )
 
     def initialize(vehicle, horizon: nil)
@@ -48,17 +50,24 @@ module Reliability
 
       elapsed = elapsed_for(profile)
       span = horizon_for(profile)
+      factor = context.life_factor_for(part_type.code)
 
       Result.new(
         part_type: part_type,
         usage_since_service: elapsed.value,
         basis: elapsed.basis,
         life_unit: profile.life_unit,
-        failure_probability: profile.failure_probability_at(elapsed.value),
-        conditional_risk: conditional_risk(profile, elapsed.value, span),
+        failure_probability: profile.failure_probability_at(elapsed.value, life_factor: factor),
+        conditional_risk: conditional_risk(profile, elapsed.value, span, factor),
         horizon: span,
-        estimate: profile.estimate?
+        estimate: profile.estimate?,
+        context_factor: factor
       )
+    end
+
+    # El contexto depende del vehiculo, no de la pieza: se resuelve una vez.
+    def context
+      @context ||= ContextFactors.for(vehicle)
     end
 
     Elapsed = Data.define(:value, :basis)
@@ -98,13 +107,13 @@ module Reliability
       [ months, 0 ].max.to_f
     end
 
-    def conditional_risk(profile, elapsed, span)
-      survived = profile.reliability_at(elapsed)
+    def conditional_risk(profile, elapsed, span, factor)
+      survived = profile.reliability_at(elapsed, life_factor: factor)
       # Pieza tan gastada que la confiabilidad se hace cero: el riesgo es total,
       # y ademas no se puede dividir por cero.
       return 1.0 if survived <= 0
 
-      risk = 1.0 - (profile.reliability_at(elapsed + span) / survived)
+      risk = 1.0 - (profile.reliability_at(elapsed + span, life_factor: factor) / survived)
 
       risk.clamp(0.0, 1.0)
     end
