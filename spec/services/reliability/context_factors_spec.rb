@@ -121,5 +121,18 @@ RSpec.describe Reliability::ContextFactors do
 
       expect(mountainous.keys).to include("brake_pads", "clutch_cable", "tires")
     end
+
+    # Un auto y una moto sufren la montana igual. Si una clase queda sin castigo
+    # en una categoria que la otra si tiene, es un olvido, no una decision.
+    it "castiga frenos y suspension en las dos clases de vehiculo, no solo en el auto" do
+      bogota = context_for("Bogota")
+
+      PartTypeCatalog.entries
+        .select { |part| %w[brakes suspension].include?(part["category"]) }
+        .each do |part|
+          expect(bogota.life_factor_for(part["code"])).to be < 1.0,
+            "#{part['code']} (#{part['applicable_vehicle_types'].join(', ')}) no recibe castigo en montana"
+        end
+    end
   end
 end

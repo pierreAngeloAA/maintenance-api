@@ -77,7 +77,10 @@ factors:
       tires: 0.85
       drive_chain: 0.90
       chain_sprocket_kit: 0.90
+      # Suspension: amortiguadores en el auto, aceite de barras en la moto. Las
+      # dos clases sufren la montana igual, asi que se castigan igual.
       shock_absorbers: 0.90
+      fork_oil: 0.90
     flat: {}
 
   climate:
