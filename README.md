@@ -31,9 +31,43 @@ bin/rails s
 
 La API queda en `http://localhost:3000`. Health check: `GET /up`.
 
+## Autenticacion
+
+Todos los endpoints exigen sesion, salvo el registro y el inicio de sesion. Se autentica con un
+token bearer:
+
+```bash
+curl -H "Authorization: Bearer <token>" http://localhost:3000/api/v1/vehicles
+```
+
+| endpoint | que hace |
+|---|---|
+| `POST /api/v1/users` | Registro. Devuelve el usuario y un token listo para usar. |
+| `POST /api/v1/sessions` | Inicio de sesion. Devuelve usuario y token. |
+| `DELETE /api/v1/sessions` | Cierra **esa** sesion; las otras sesiones del usuario siguen vivas. |
+| `GET /api/v1/me` | Usuario de la sesion actual. |
+
+```bash
+curl -X POST http://localhost:3000/api/v1/sessions \
+  -H "Content-Type: application/json" \
+  -d '{"session":{"email":"pierre@example.com","password":"unaClaveSegura1"}}'
+```
+
+Detalles que importan:
+
+- En la base de datos se guarda el **digest** del token, nunca el token: leer la tabla `sessions` no
+  alcanza para hacerse pasar por nadie.
+- Credenciales invalidas siempre responden lo mismo (`{"error":"invalid_credentials"}`), sin
+  distinguir entre correo inexistente y contrasena equivocada: lo contrario revelaria quien esta
+  registrado.
+- Cada vehiculo pertenece a un usuario. Pedir el vehiculo de otro responde **404**, no 403, para no
+  confirmar que existe.
+- Los endpoints nacen protegidos: hay que marcarlos explicitamente con `allow_unauthenticated_access`
+  para abrirlos. Es preferible que un endpoint nuevo quede cerrado por olvido a que quede abierto.
+
 ## Endpoints
 
-Base: `/api/v1`. El API habla **camelCase** con el frontend (`vehicleType`, `usageValue`) y
+Base: `/api/v1`. Todos exigen la cabecera `Authorization: Bearer <token>`. El API habla **camelCase** con el frontend (`vehicleType`, `usageValue`) y
 snake_case internamente. Los decimales viajan como string (`"45000.0"`) para no perder precision.
 
 ### `GET /api/v1/vehicles`
@@ -92,6 +126,50 @@ Devuelve el vehiculo mas `partTypes`, las piezas del catalogo que aplican a esa 
 ```json
 { "error": "not_found" }
 ```
+
+### `GET` y `POST /api/v1/vehicles/:vehicle_id/maintenance_records`
+
+Historial de mantenimientos: que pieza se cambio, cuando, con cuanto uso y de que marca. **Es la
+data que alimenta el modelo de riesgo** y la que ninguna API externa puede dar.
+
+```bash
+curl -X POST http://localhost:3000/api/v1/vehicles/1/maintenance_records \
+  -H "Content-Type: application/json" \
+  -d '{"maintenanceRecord":{"partTypeId":17,"performedOn":"2026-07-15",
+       "usageAtService":12000,"partBrand":"DID","costCents":18000000,"currency":"COP"}}'
+```
+
+El listado viene con lo mas reciente primero. `422` si la pieza no aplica a esa clase de vehiculo
+(no se le cambia la cadena a un auto) o si el uso del mantenimiento supera el uso actual del
+vehiculo.
+
+### `GET /api/v1/vehicles/:vehicle_id/risks`
+
+Riesgo de falla por pieza, de mayor a menor. Acepta `?horizon=5000` para cambiar el tramo sobre el
+que se calcula el riesgo condicional; un valor invalido se ignora y se usa el tramo por defecto.
+
+```json
+{
+  "vehicleId": 1,
+  "risks": [
+    {
+      "partType": { "code": "drive_chain", "name": "Cadena de transmision" },
+      "usageSinceService": 6000.0,
+      "basis": "last_service",
+      "lifeUnit": "km",
+      "failureProbability": 0.0861,
+      "conditionalRisk": 0.0298,
+      "horizon": 1000,
+      "estimate": true
+    }
+  ]
+}
+```
+
+- `failureProbability` = `1 - R(t)`: que tan probable es que la pieza ya haya llegado al final de su vida.
+- `conditionalRisk` = `1 - R(t+Δt)/R(t)`: riesgo de falla en el proximo tramo, dado que llego sana hasta `t`. **Es el numero util.**
+- `basis` dice de donde salio `t`: `last_service` (hay historial), `vehicle_total` (la pieza nunca se cambio) o `model_year` (pieza que se degrada con el tiempo, sin historial).
+- `estimate: true` significa que β y η todavia son estimaciones de ingenieria, no numeros calculados con datos de usuarios. **La interfaz tiene que decirlo.**
 
 ### `GET /api/v1/vehicles/:vehicle_id/recalls`
 

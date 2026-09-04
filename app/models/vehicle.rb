@@ -13,6 +13,10 @@ class Vehicle < ApplicationRecord
   VIN_FORMAT = /\A[A-HJ-NPR-Z0-9]{17}\z/
   OLDEST_MODEL_YEAR = 1900
 
+  belongs_to :user
+
+  has_many :maintenance_records, dependent: :destroy
+
   enum :vehicle_type, VEHICLE_TYPES, validate: true
   enum :usage_unit, USAGE_UNITS, validate: true
 

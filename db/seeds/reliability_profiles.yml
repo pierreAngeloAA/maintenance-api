@@ -1,0 +1,58 @@
+# Parametros de Weibull por pieza y clase de vehiculo.
+#
+# ADVERTENCIA: todos estos numeros son ESTIMACIONES DE INGENIERIA, no datos
+# medidos. Salen de los intervalos recomendados de fabricante ajustados a uso
+# urbano colombiano. Estan marcados con source: engineering_estimate justamente
+# para poder reemplazarlos cuando haya volumen real de mantenimientos de usuarios,
+# que es la ventaja competitiva del producto.
+#
+# Criterio usado para cada parametro:
+#
+# characteristic_life (eta): uso al que ya fallo el 63,2%. Se toma el intervalo
+#   recomendado de fabricante y se ajusta un poco hacia arriba, porque el
+#   intervalo recomendado es conservador: la pieza no falla exactamente ahi.
+#
+# weibull_shape (beta): forma de la curva, segun el modo de falla dominante.
+#   beta ~ 1.0 - 1.5  falla aleatoria, sin desgaste acumulado (electronica, bombillos)
+#   beta ~ 1.5 - 2.0  desgaste leve o mixto (guayas, cables)
+#   beta ~ 2.0 - 3.0  desgaste progresivo tipico (llantas, pastillas, cadena)
+#   beta > 3.0        fatiga con vida bien definida (correas, fluidos por degradacion)
+#
+# life_unit: km cuando la pieza se gasta rodando; months cuando se degrada con el
+#   tiempo asi el vehiculo este quieto (bateria, liquido de frenos, refrigerante).
+
+# ============ AUTOMOVIL ============
+- { part_code: engine_oil,         vehicle_type: car, weibull_shape: 3.5, characteristic_life: 7000,  life_unit: km }
+- { part_code: oil_filter,         vehicle_type: car, weibull_shape: 3.5, characteristic_life: 7000,  life_unit: km }
+- { part_code: air_filter,         vehicle_type: car, weibull_shape: 2.5, characteristic_life: 15000, life_unit: km }
+- { part_code: cabin_filter,       vehicle_type: car, weibull_shape: 2.5, characteristic_life: 15000, life_unit: km }
+- { part_code: spark_plugs,        vehicle_type: car, weibull_shape: 2.5, characteristic_life: 30000, life_unit: km }
+- { part_code: timing_belt,        vehicle_type: car, weibull_shape: 4.0, characteristic_life: 80000, life_unit: km }
+- { part_code: serpentine_belt,    vehicle_type: car, weibull_shape: 3.0, characteristic_life: 60000, life_unit: km }
+- { part_code: brake_pads,         vehicle_type: car, weibull_shape: 2.5, characteristic_life: 35000, life_unit: km }
+- { part_code: tires,              vehicle_type: car, weibull_shape: 2.5, characteristic_life: 45000, life_unit: km }
+- { part_code: transmission_fluid, vehicle_type: car, weibull_shape: 3.0, characteristic_life: 60000, life_unit: km }
+- { part_code: shock_absorbers,    vehicle_type: car, weibull_shape: 2.5, characteristic_life: 70000, life_unit: km }
+- { part_code: brake_fluid,        vehicle_type: car, weibull_shape: 3.0, characteristic_life: 24,    life_unit: months }
+- { part_code: coolant,            vehicle_type: car, weibull_shape: 3.0, characteristic_life: 36,    life_unit: months }
+- { part_code: battery,            vehicle_type: car, weibull_shape: 2.5, characteristic_life: 36,    life_unit: months }
+- { part_code: wiper_blades,       vehicle_type: car, weibull_shape: 2.0, characteristic_life: 12,    life_unit: months }
+- { part_code: headlight_bulb,     vehicle_type: car, weibull_shape: 1.2, characteristic_life: 24,    life_unit: months }
+
+# ============ MOTOCICLETA ============
+# El motor de una moto gira mucho mas revolucionado y tiene menos volumen de
+# aceite: los intervalos son bastante mas cortos que los de un auto.
+- { part_code: engine_oil,         vehicle_type: motorcycle, weibull_shape: 3.5, characteristic_life: 3000,  life_unit: km }
+- { part_code: oil_filter,         vehicle_type: motorcycle, weibull_shape: 3.0, characteristic_life: 6000,  life_unit: km }
+- { part_code: air_filter,         vehicle_type: motorcycle, weibull_shape: 2.5, characteristic_life: 10000, life_unit: km }
+- { part_code: spark_plugs,        vehicle_type: motorcycle, weibull_shape: 2.5, characteristic_life: 12000, life_unit: km }
+- { part_code: brake_pads,         vehicle_type: motorcycle, weibull_shape: 2.5, characteristic_life: 15000, life_unit: km }
+- { part_code: brake_shoes,        vehicle_type: motorcycle, weibull_shape: 2.5, characteristic_life: 20000, life_unit: km }
+- { part_code: tires,              vehicle_type: motorcycle, weibull_shape: 2.5, characteristic_life: 20000, life_unit: km }
+- { part_code: drive_chain,        vehicle_type: motorcycle, weibull_shape: 2.8, characteristic_life: 20000, life_unit: km }
+- { part_code: chain_sprocket_kit, vehicle_type: motorcycle, weibull_shape: 3.0, characteristic_life: 25000, life_unit: km }
+- { part_code: clutch_cable,       vehicle_type: motorcycle, weibull_shape: 1.8, characteristic_life: 20000, life_unit: km }
+- { part_code: fork_oil,           vehicle_type: motorcycle, weibull_shape: 2.5, characteristic_life: 20000, life_unit: km }
+- { part_code: brake_fluid,        vehicle_type: motorcycle, weibull_shape: 3.0, characteristic_life: 24,    life_unit: months }
+- { part_code: battery,            vehicle_type: motorcycle, weibull_shape: 2.5, characteristic_life: 24,    life_unit: months }
+- { part_code: headlight_bulb,     vehicle_type: motorcycle, weibull_shape: 1.2, characteristic_life: 18,    life_unit: months }

@@ -2,7 +2,9 @@ require "rails_helper"
 
 RSpec.describe "Api::V1::Recalls", type: :request do
   let(:json) { response.parsed_body }
-  let(:vehicle) { create(:vehicle, make: "Honda", model: "Accord", model_year: 2020) }
+  let(:user) { create(:user) }
+  let(:headers) { auth_headers_for(user) }
+  let(:vehicle) { create(:vehicle, user: user, make: "Honda", model: "Accord", model_year: 2020) }
 
   def stub_recalls(results)
     stub_request(:get, /api.nhtsa.gov/).to_return(
@@ -25,7 +27,7 @@ RSpec.describe "Api::V1::Recalls", type: :request do
       "parkOutSide" => true
     } ])
 
-    get "/api/v1/vehicles/#{vehicle.id}/recalls"
+    get "/api/v1/vehicles/#{vehicle.id}/recalls", headers: headers
 
     expect(response).to have_http_status(:ok)
     recall = json["recalls"].first
@@ -39,7 +41,7 @@ RSpec.describe "Api::V1::Recalls", type: :request do
     # Caso colombiano: no encontrar recalls no es un error.
     stub_recalls([])
 
-    get "/api/v1/vehicles/#{vehicle.id}/recalls"
+    get "/api/v1/vehicles/#{vehicle.id}/recalls", headers: headers
 
     expect(response).to have_http_status(:ok)
     expect(json["recalls"]).to eq([])
@@ -48,15 +50,31 @@ RSpec.describe "Api::V1::Recalls", type: :request do
   it "responde 200 con lista vacia cuando NHTSA esta caida" do
     stub_request(:get, /api.nhtsa.gov/).to_timeout
 
-    get "/api/v1/vehicles/#{vehicle.id}/recalls"
+    get "/api/v1/vehicles/#{vehicle.id}/recalls", headers: headers
 
     expect(response).to have_http_status(:ok)
     expect(json["recalls"]).to eq([])
   end
 
   it "responde 404 cuando el vehiculo no existe" do
-    get "/api/v1/vehicles/0/recalls"
+    get "/api/v1/vehicles/0/recalls", headers: headers
 
     expect(response).to have_http_status(:not_found)
+  end
+
+  describe "aislamiento entre usuarios" do
+    it "responde 404 sobre el vehiculo de otro usuario" do
+      ajeno = create(:vehicle, user: create(:user))
+
+      get "/api/v1/vehicles/#{ajeno.id}/recalls", headers: headers
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "responde 401 sin token" do
+      get "/api/v1/vehicles/#{vehicle.id}/recalls"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
   end
 end

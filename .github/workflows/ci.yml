@@ -2,8 +2,15 @@ name: CI
 
 on:
   pull_request:
+  # Solo main: las ramas de trabajo ya las cubre el trigger de pull_request,
+  # y tenerlas en los dos hacia correr todo dos veces por push.
   push:
-    branches: [ main, staging ]
+    branches: [ main ]
+
+# Una corrida por rama: si llega un push nuevo, se cancela la anterior.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:

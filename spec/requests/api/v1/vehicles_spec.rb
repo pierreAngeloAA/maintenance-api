@@ -2,6 +2,8 @@ require "rails_helper"
 
 RSpec.describe "Api::V1::Vehicles", type: :request do
   let(:json) { response.parsed_body }
+  let(:user) { create(:user) }
+  let(:headers) { auth_headers_for(user) }
 
   describe "POST /api/v1/vehicles" do
     let(:valid_attributes) do
@@ -21,14 +23,14 @@ RSpec.describe "Api::V1::Vehicles", type: :request do
     end
 
     it "crea el vehiculo y responde 201" do
-      expect { post "/api/v1/vehicles", params: valid_attributes, as: :json }
+      expect { post "/api/v1/vehicles", params: valid_attributes, as: :json, headers: headers }
         .to change(Vehicle, :count).by(1)
 
       expect(response).to have_http_status(:created)
     end
 
     it "devuelve el vehiculo creado en camelCase" do
-      post "/api/v1/vehicles", params: valid_attributes, as: :json
+      post "/api/v1/vehicles", params: valid_attributes, as: :json, headers: headers
 
       expect(json["id"]).to be_present
       expect(json["vehicleType"]).to eq("car")
@@ -38,7 +40,7 @@ RSpec.describe "Api::V1::Vehicles", type: :request do
     end
 
     it "normaliza la placa" do
-      post "/api/v1/vehicles", params: valid_attributes, as: :json
+      post "/api/v1/vehicles", params: valid_attributes, as: :json, headers: headers
 
       expect(json["plate"]).to eq("ABC123")
     end
@@ -56,7 +58,7 @@ RSpec.describe "Api::V1::Vehicles", type: :request do
         }
       }
 
-      post "/api/v1/vehicles", params: attributes, as: :json
+      post "/api/v1/vehicles", params: attributes, as: :json, headers: headers
 
       expect(response).to have_http_status(:created)
       expect(json["vin"]).to be_nil
@@ -65,7 +67,7 @@ RSpec.describe "Api::V1::Vehicles", type: :request do
     it "responde 422 con los errores cuando los datos no sirven" do
       attributes = valid_attributes.deep_merge(vehicle: { make: "", vin: "NOTAVIN" })
 
-      post "/api/v1/vehicles", params: attributes, as: :json
+      post "/api/v1/vehicles", params: attributes, as: :json, headers: headers
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(json["errors"]["make"]).to be_present
@@ -75,7 +77,7 @@ RSpec.describe "Api::V1::Vehicles", type: :request do
     it "devuelve las llaves de error en camelCase" do
       attributes = valid_attributes.deep_merge(vehicle: { modelYear: 1800 })
 
-      post "/api/v1/vehicles", params: attributes, as: :json
+      post "/api/v1/vehicles", params: attributes, as: :json, headers: headers
 
       expect(json["errors"]).to have_key("modelYear")
     end
@@ -83,7 +85,7 @@ RSpec.describe "Api::V1::Vehicles", type: :request do
     it "ignora atributos que no estan permitidos" do
       attributes = valid_attributes.deep_merge(vehicle: { id: 99_999 })
 
-      post "/api/v1/vehicles", params: attributes, as: :json
+      post "/api/v1/vehicles", params: attributes, as: :json, headers: headers
 
       expect(json["id"]).not_to eq(99_999)
     end
@@ -91,27 +93,64 @@ RSpec.describe "Api::V1::Vehicles", type: :request do
 
   describe "GET /api/v1/vehicles" do
     it "lista los vehiculos, el mas reciente primero" do
-      older = create(:vehicle, created_at: 2.days.ago)
-      newer = create(:vehicle, :motorcycle, created_at: 1.hour.ago)
+      older = create(:vehicle, user: user, created_at: 2.days.ago)
+      newer = create(:vehicle, :motorcycle, user: user, created_at: 1.hour.ago)
 
-      get "/api/v1/vehicles"
+      get "/api/v1/vehicles", headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(json.map { |vehicle| vehicle["id"] }).to eq([ newer.id, older.id ])
     end
 
     it "devuelve una lista vacia cuando no hay vehiculos" do
-      get "/api/v1/vehicles"
+      get "/api/v1/vehicles", headers: headers
 
       expect(json).to eq([])
     end
   end
 
+  describe "aislamiento entre usuarios" do
+    it "no lista los vehiculos de otro usuario" do
+      create(:vehicle, user: create(:user))
+
+      get "/api/v1/vehicles", headers: headers
+
+      expect(json).to eq([])
+    end
+
+    it "responde 404 al pedir el vehiculo de otro usuario, sin revelar que existe" do
+      ajeno = create(:vehicle, user: create(:user))
+
+      get "/api/v1/vehicles/#{ajeno.id}", headers: headers
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "responde 401 sin token" do
+      get "/api/v1/vehicles"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "el vehiculo creado queda a nombre del usuario de la sesion" do
+      attributes = {
+        vehicle: {
+          vehicleType: "car", make: "Renault", model: "Logan",
+          modelYear: 2019, usageValue: 45_000, usageUnit: "km"
+        }
+      }
+
+      post "/api/v1/vehicles", params: attributes, as: :json, headers: headers
+
+      expect(Vehicle.find(json["id"]).user).to eq(user)
+    end
+  end
+
   describe "GET /api/v1/vehicles/:id" do
     it "devuelve el vehiculo" do
-      vehicle = create(:vehicle)
+      vehicle = create(:vehicle, user: user)
 
-      get "/api/v1/vehicles/#{vehicle.id}"
+      get "/api/v1/vehicles/#{vehicle.id}", headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(json["id"]).to eq(vehicle.id)
@@ -120,16 +159,16 @@ RSpec.describe "Api::V1::Vehicles", type: :request do
     it "incluye las piezas del catalogo que aplican al vehiculo" do
       create(:part_type, :drive_chain)
       create(:part_type, :timing_belt)
-      motorcycle = create(:vehicle, :motorcycle)
+      motorcycle = create(:vehicle, :motorcycle, user: user)
 
-      get "/api/v1/vehicles/#{motorcycle.id}"
+      get "/api/v1/vehicles/#{motorcycle.id}", headers: headers
 
       codes = json["partTypes"].map { |part_type| part_type["code"] }
       expect(codes).to contain_exactly("drive_chain")
     end
 
     it "responde 404 cuando el vehiculo no existe" do
-      get "/api/v1/vehicles/0"
+      get "/api/v1/vehicles/0", headers: headers
 
       expect(response).to have_http_status(:not_found)
       expect(json["error"]).to be_present

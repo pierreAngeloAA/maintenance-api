@@ -10,9 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_194656) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_210852) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "maintenance_records", force: :cascade do |t|
+    t.integer "cost_cents"
+    t.datetime "created_at", null: false
+    t.string "currency", default: "COP", null: false
+    t.text "notes"
+    t.string "part_brand"
+    t.bigint "part_type_id", null: false
+    t.date "performed_on", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "usage_at_service", precision: 12, scale: 2, null: false
+    t.bigint "vehicle_id", null: false
+    t.index ["part_type_id"], name: "index_maintenance_records_on_part_type_id"
+    t.index ["vehicle_id", "part_type_id", "usage_at_service"], name: "index_maintenance_records_on_vehicle_part_and_usage"
+    t.index ["vehicle_id"], name: "index_maintenance_records_on_vehicle_id"
+  end
 
   create_table "part_types", force: :cascade do |t|
     t.string "applicable_vehicle_types", default: [], null: false, array: true
@@ -26,6 +42,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_194656) do
     t.index ["code"], name: "index_part_types_on_code", unique: true
   end
 
+  create_table "reliability_profiles", force: :cascade do |t|
+    t.decimal "characteristic_life", precision: 12, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.string "life_unit", null: false
+    t.bigint "part_type_id", null: false
+    t.string "source", default: "engineering_estimate", null: false
+    t.datetime "updated_at", null: false
+    t.string "vehicle_type", null: false
+    t.decimal "weibull_shape", precision: 6, scale: 3, null: false
+    t.index ["part_type_id", "vehicle_type"], name: "index_reliability_profiles_on_part_type_id_and_vehicle_type", unique: true
+    t.index ["part_type_id"], name: "index_reliability_profiles_on_part_type_id"
+  end
+
+  create_table "sessions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "token_digest", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["token_digest"], name: "index_sessions_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "name"
+    t.string "password_digest", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+  end
+
   create_table "vehicles", force: :cascade do |t|
     t.string "city"
     t.datetime "created_at", null: false
@@ -37,10 +84,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_194656) do
     t.datetime "updated_at", null: false
     t.string "usage_unit", default: "km", null: false
     t.decimal "usage_value", precision: 12, scale: 2, default: "0.0", null: false
+    t.bigint "user_id", null: false
     t.string "vehicle_type", null: false
     t.string "vin"
     t.index ["plate"], name: "index_vehicles_on_plate"
+    t.index ["user_id"], name: "index_vehicles_on_user_id"
     t.index ["vehicle_type"], name: "index_vehicles_on_vehicle_type"
     t.index ["vin"], name: "index_vehicles_on_vin", unique: true, where: "(vin IS NOT NULL)"
   end
+
+  add_foreign_key "maintenance_records", "part_types"
+  add_foreign_key "maintenance_records", "vehicles"
+  add_foreign_key "reliability_profiles", "part_types"
+  add_foreign_key "sessions", "users"
+  add_foreign_key "vehicles", "users"
 end
