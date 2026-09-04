@@ -44,6 +44,22 @@ RSpec.describe "Api::V1::Risks", type: :request do
     expect(json["risks"].first["estimate"]).to be(true)
   end
 
+  it "informa el ajuste por contexto que se le aplico a la pieza" do
+    get "/api/v1/vehicles/#{vehicle.id}/risks", headers: headers
+
+    # La factory registra el vehiculo en Bogota, ciudad montanosa: la cadena
+    # dura menos que en una ciudad plana.
+    expect(json["risks"].first["contextFactor"]).to be_between(0, 1).exclusive
+  end
+
+  it "informa un ajuste neutro cuando no sabemos donde rueda el vehiculo" do
+    vehicle.update!(city: nil)
+
+    get "/api/v1/vehicles/#{vehicle.id}/risks", headers: headers
+
+    expect(json["risks"].first["contextFactor"]).to eq(1.0)
+  end
+
   it "informa el tramo sobre el que se calculo el riesgo condicional" do
     get "/api/v1/vehicles/#{vehicle.id}/risks", headers: headers
 

@@ -12,7 +12,10 @@ module RiskSerializer
       conditionalRisk: risk.conditional_risk,
       horizon: risk.horizon,
       # True mientras los parametros sean estimaciones y no datos de usuarios.
-      estimate: risk.estimate
+      estimate: risk.estimate,
+      # Ajuste por clima y terreno de la ciudad del vehiculo. 1,0 es sin ajuste;
+      # menos de 1,0 significa que en ese contexto la pieza dura menos.
+      contextFactor: risk.context_factor
     }
   end
 end

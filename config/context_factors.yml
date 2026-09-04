@@ -1,0 +1,106 @@
+# Factores de vida acelerada por contexto del vehiculo.
+#
+# ADVERTENCIA: igual que los parametros de Weibull, todos estos numeros son
+# ESTIMACIONES DE INGENIERIA INICIALES, no datos medidos. Son deliberadamente
+# conservadores (castigos suaves) y estan pensados para recalibrarse cuando haya
+# volumen real de mantenimientos de usuarios por ciudad, que es la ventaja
+# competitiva del producto.
+#
+# Como se usa:
+#
+#   eta_efectiva = eta x PI(factores que aplican)
+#
+# Es decir, el contexto NO cambia la matematica del riesgo: solo acorta la vida
+# caracteristica de la pieza. Un factor de 0,80 significa "en este contexto la
+# pieza dura un 20% menos". Un factor ausente vale 1,0 y nunca rompe el calculo.
+#
+# Por que este archivo vive en `config/` y no en `db/seeds/`: no se carga en
+# ninguna tabla, es una tabla de consulta que se lee en memoria. Los archivos de
+# `db/seeds/` si terminan en la base de datos.
+
+# --- Ciudades ---
+#
+# Cada ciudad se resuelve a un terreno y un clima. Las claves ya vienen
+# normalizadas (minusculas, sin tildes) porque asi entra la ciudad del vehiculo.
+# Una ciudad que no este aca simplemente no aplica ningun factor.
+cities:
+  # Andina, montanosa y fria
+  bogota: { terrain: mountainous, climate: cold_dry }
+  soacha: { terrain: mountainous, climate: cold_dry }
+  tunja: { terrain: mountainous, climate: cold_dry }
+  pasto: { terrain: mountainous, climate: cold_dry }
+  # Andina, montanosa y templada
+  medellin: { terrain: mountainous, climate: temperate }
+  bello: { terrain: mountainous, climate: temperate }
+  itagui: { terrain: mountainous, climate: temperate }
+  envigado: { terrain: mountainous, climate: temperate }
+  manizales: { terrain: mountainous, climate: temperate }
+  pereira: { terrain: mountainous, climate: temperate }
+  armenia: { terrain: mountainous, climate: temperate }
+  popayan: { terrain: mountainous, climate: temperate }
+  ibague: { terrain: mountainous, climate: temperate }
+  # Montanosa y calurosa
+  bucaramanga: { terrain: mountainous, climate: hot_humid }
+  floridablanca: { terrain: mountainous, climate: hot_humid }
+  # Plana y calurosa humeda (Caribe y Orinoquia)
+  barranquilla: { terrain: flat, climate: hot_humid }
+  soledad: { terrain: flat, climate: hot_humid }
+  cartagena: { terrain: flat, climate: hot_humid }
+  santa marta: { terrain: flat, climate: hot_humid }
+  monteria: { terrain: flat, climate: hot_humid }
+  sincelejo: { terrain: flat, climate: hot_humid }
+  villavicencio: { terrain: flat, climate: hot_humid }
+  quibdo: { terrain: flat, climate: hot_humid }
+  # Plana y calurosa seca
+  cali: { terrain: flat, climate: hot_dry }
+  palmira: { terrain: flat, climate: hot_dry }
+  cucuta: { terrain: flat, climate: hot_dry }
+  neiva: { terrain: flat, climate: hot_dry }
+  valledupar: { terrain: flat, climate: hot_dry }
+  riohacha: { terrain: flat, climate: hot_dry }
+
+# --- Factores ---
+#
+# Solo se listan las piezas que el contexto castiga. Todo lo que no aparezca
+# vale 1,0. `flat` y `temperate` son las referencias: no castigan nada, y por eso
+# aparecen vacias en vez de con factores de 1,0 repetidos.
+factors:
+  terrain:
+    # Pendiente permanente: mas frenado de retencion, mas embrague y mas
+    # arrastre lateral en las llantas. Es lo que el issue pide castigar.
+    mountainous:
+      brake_pads: 0.80
+      brake_shoes: 0.80
+      brake_fluid: 0.90
+      clutch_cable: 0.80
+      transmission_fluid: 0.90
+      tires: 0.85
+      drive_chain: 0.90
+      chain_sprocket_kit: 0.90
+      shock_absorbers: 0.90
+    flat: {}
+
+  climate:
+    # Calor y humedad: el calor acelera la degradacion quimica de la bateria y
+    # la humedad y el sol agrietan los cauchos.
+    hot_humid:
+      battery: 0.80
+      tires: 0.90
+      wiper_blades: 0.85
+      serpentine_belt: 0.90
+      timing_belt: 0.95
+      coolant: 0.90
+      engine_oil: 0.95
+    # Calor seco: mismo castigo termico, menos ataque a los cauchos, pero el
+    # polvo tapa el filtro de aire mucho antes.
+    hot_dry:
+      battery: 0.85
+      tires: 0.92
+      wiper_blades: 0.90
+      coolant: 0.92
+      engine_oil: 0.95
+      air_filter: 0.85
+    # Frio de altura: arranques mas exigentes castigan algo la bateria.
+    cold_dry:
+      battery: 0.95
+    temperate: {}
