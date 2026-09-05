@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_05_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_05_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -133,7 +133,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_220000) do
     t.string "model", null: false
     t.integer "model_year", null: false
     t.string "plate"
+    t.datetime "runt_checked_at"
+    t.date "soat_expires_on"
     t.jsonb "specs", default: {}, null: false
+    t.date "technical_inspection_expires_on"
     t.datetime "updated_at", null: false
     t.string "usage_unit", default: "km", null: false
     t.decimal "usage_value", precision: 12, scale: 2, default: "0.0", null: false
@@ -141,6 +144,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_220000) do
     t.string "vehicle_type", null: false
     t.string "vin"
     t.index ["plate"], name: "index_vehicles_on_plate"
+    t.index ["soat_expires_on"], name: "index_vehicles_on_soat_expires_on"
+    t.index ["technical_inspection_expires_on"], name: "index_vehicles_on_technical_inspection_expires_on"
     t.index ["user_id"], name: "index_vehicles_on_user_id"
     t.index ["vehicle_type"], name: "index_vehicles_on_vehicle_type"
     t.index ["vin"], name: "index_vehicles_on_vin", unique: true, where: "(vin IS NOT NULL)"

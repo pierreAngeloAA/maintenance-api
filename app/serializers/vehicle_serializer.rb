@@ -14,6 +14,11 @@ module VehicleSerializer
       usageUnit: vehicle.usage_unit,
       city: vehicle.city,
       specs: vehicle.specs,
+      # Vencimientos que vienen del RUNT. Nulos mientras no se haya consultado o
+      # si no se encontro la placa: no encontrarla no es un error.
+      soatExpiresOn: vehicle.soat_expires_on,
+      technicalInspectionExpiresOn: vehicle.technical_inspection_expires_on,
+      runtCheckedAt: vehicle.runt_checked_at,
       createdAt: vehicle.created_at,
       updatedAt: vehicle.updated_at
     }
