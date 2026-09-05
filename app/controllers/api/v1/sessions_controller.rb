@@ -1,6 +1,9 @@
 module Api
   module V1
     class SessionsController < ApplicationController
+      # Login y logout de la propia sesion.
+      skip_authorization
+
       allow_unauthenticated_access only: :create
 
       def create

@@ -18,7 +18,7 @@ module ReliabilityProfileCatalog
       part_type = part_types[entry["part_code"]]
       next if part_type.nil?
 
-      profile = ReliabilityProfile.find_or_initialize_by(
+      profile = Reliability::ReliabilityProfile.find_or_initialize_by(
         part_type: part_type,
         vehicle_type: entry["vehicle_type"]
       )

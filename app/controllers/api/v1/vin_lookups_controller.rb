@@ -5,6 +5,9 @@ module Api
     # Siempre responde 200: que NHTSA no conozca el vehiculo (tipico en
     # Colombia) no es un error del cliente ni del servidor, es informacion.
     class VinLookupsController < ApplicationController
+      # Catalogo externo, igual para todos.
+      skip_authorization
+
       def show
         vin = params[:vin].to_s.gsub(/\s+/, "").upcase
         result = Nhtsa::VinDecoder.new.call(vin)

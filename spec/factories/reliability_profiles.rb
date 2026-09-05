@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :reliability_profile do
+  factory :reliability_profile, class: "Reliability::ReliabilityProfile" do
     part_type
     vehicle_type { "car" }
     weibull_shape { 2.5 }

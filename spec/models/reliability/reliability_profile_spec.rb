@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe ReliabilityProfile, type: :model do
+RSpec.describe Reliability::ReliabilityProfile, type: :model do
   describe "atributos basicos" do
     it "es valido con los atributos de la factory" do
       expect(build(:reliability_profile)).to be_valid

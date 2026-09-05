@@ -21,7 +21,7 @@ RSpec.describe PartTypeCatalog do
     it "cubre todas las clases de vehiculo soportadas" do
       covered = described_class.entries.flat_map { |entry| entry["applicable_vehicle_types"] }.uniq
 
-      expect(covered).to match_array(Vehicle.vehicle_types.keys)
+      expect(covered).to match_array(Garage::Vehicle.vehicle_types.keys)
     end
   end
 
