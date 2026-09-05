@@ -12,6 +12,12 @@ module MaintenanceRecordSerializer
       costCents: record.cost_cents,
       currency: record.currency,
       notes: record.notes,
+      # De donde salio el dato: no todos los registros valen lo mismo.
+      recordedBy: {
+        source: record.source,
+        userName: record.recorded_by_user&.name,
+        organizationName: record.recorded_by_organization&.name
+      },
       createdAt: record.created_at
     }
   end

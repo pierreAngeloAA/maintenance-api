@@ -6,8 +6,23 @@ module Garage
   # en ninguna API externa, y es la que alimenta el modelo de riesgo (el uso desde
   # el ultimo cambio de cada pieza).
   class MaintenanceRecord < ApplicationRecord
+    # De donde salio el dato. Un registro hecho por un taller verificado vale
+    # mas para el modelo de riesgo que uno que el dueno escribio de memoria seis
+    # meses despues, y el dia que se recalibren los reliability_profiles con la
+    # flota real va a hacer falta poder ponderarlos distinto. Si no se guarda
+    # desde el principio, esa informacion no se recupera.
+    SOURCES = { owner: "owner", workshop: "workshop" }.freeze
+
     belongs_to :vehicle
     belongs_to :part_type
+    belongs_to :recorded_by_user, class_name: "User", optional: true
+    belongs_to :recorded_by_organization,
+      class_name: "Identity::Organization", optional: true
+
+    enum :source, SOURCES, validate: true, prefix: true
+
+    # La procedencia se fija al crear y no se reescribe despues.
+    before_validation :record_provenance, on: :create
 
     validates :performed_on, presence: true
     validates :usage_at_service, presence: true, numericality: { greater_than_or_equal_to: 0 }
@@ -25,6 +40,12 @@ module Garage
     }
 
     private
+
+    def record_provenance
+      self.recorded_by_user ||= Current.user
+      self.recorded_by_organization ||= Current.organization
+      self.source = recorded_by_organization ? "workshop" : "owner"
+    end
 
     def performed_on_is_not_in_the_future
       return if performed_on.blank?
