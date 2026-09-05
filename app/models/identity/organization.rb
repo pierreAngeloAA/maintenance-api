@@ -15,6 +15,7 @@ module Identity
 
     has_many :memberships, dependent: :destroy
     has_many :users, through: :memberships
+    has_many :vehicle_access_grants, class_name: "Garage::VehicleAccessGrant", dependent: :destroy
 
     # `scopes: false` porque el valor "store" generaria una clase de scope
     # Organization.store, que Active Record ya define (ActiveRecord::Store).

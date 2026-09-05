@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_05_200100) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_05_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,10 +52,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_200100) do
     t.string "part_brand"
     t.bigint "part_type_id", null: false
     t.date "performed_on", null: false
+    t.bigint "recorded_by_organization_id"
+    t.bigint "recorded_by_user_id"
+    t.string "source", default: "owner", null: false
     t.datetime "updated_at", null: false
     t.decimal "usage_at_service", precision: 12, scale: 2, null: false
     t.bigint "vehicle_id", null: false
     t.index ["part_type_id"], name: "index_maintenance_records_on_part_type_id"
+    t.index ["recorded_by_organization_id"], name: "index_maintenance_records_on_recorded_by_organization_id"
+    t.index ["recorded_by_user_id"], name: "index_maintenance_records_on_recorded_by_user_id"
+    t.index ["source"], name: "index_maintenance_records_on_source"
     t.index ["vehicle_id", "part_type_id", "usage_at_service"], name: "index_maintenance_records_on_vehicle_part_and_usage"
     t.index ["vehicle_id"], name: "index_maintenance_records_on_vehicle_id"
   end
@@ -103,6 +109,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_200100) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  create_table "vehicle_access_grants", force: :cascade do |t|
+    t.string "access_level", null: false
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.datetime "granted_at", null: false
+    t.bigint "granted_by_id", null: false
+    t.bigint "organization_id", null: false
+    t.datetime "revoked_at"
+    t.datetime "updated_at", null: false
+    t.bigint "vehicle_id", null: false
+    t.index ["expires_at"], name: "index_vehicle_access_grants_on_expires_at"
+    t.index ["granted_by_id"], name: "index_vehicle_access_grants_on_granted_by_id"
+    t.index ["organization_id"], name: "index_vehicle_access_grants_on_organization_id"
+    t.index ["vehicle_id", "organization_id"], name: "index_vehicle_access_grants_vigentes", unique: true, where: "(revoked_at IS NULL)"
+    t.index ["vehicle_id"], name: "index_vehicle_access_grants_on_vehicle_id"
+  end
+
   create_table "vehicles", force: :cascade do |t|
     t.string "city"
     t.datetime "created_at", null: false
@@ -110,7 +133,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_200100) do
     t.string "model", null: false
     t.integer "model_year", null: false
     t.string "plate"
+    t.datetime "runt_checked_at"
+    t.date "soat_expires_on"
     t.jsonb "specs", default: {}, null: false
+    t.date "technical_inspection_expires_on"
     t.datetime "updated_at", null: false
     t.string "usage_unit", default: "km", null: false
     t.decimal "usage_value", precision: 12, scale: 2, default: "0.0", null: false
@@ -118,6 +144,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_200100) do
     t.string "vehicle_type", null: false
     t.string "vin"
     t.index ["plate"], name: "index_vehicles_on_plate"
+    t.index ["soat_expires_on"], name: "index_vehicles_on_soat_expires_on"
+    t.index ["technical_inspection_expires_on"], name: "index_vehicles_on_technical_inspection_expires_on"
     t.index ["user_id"], name: "index_vehicles_on_user_id"
     t.index ["vehicle_type"], name: "index_vehicles_on_vehicle_type"
     t.index ["vin"], name: "index_vehicles_on_vin", unique: true, where: "(vin IS NOT NULL)"
@@ -125,9 +153,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_200100) do
 
   add_foreign_key "identity_memberships", "identity_organizations", column: "organization_id"
   add_foreign_key "identity_memberships", "users"
+  add_foreign_key "maintenance_records", "identity_organizations", column: "recorded_by_organization_id"
   add_foreign_key "maintenance_records", "part_types"
+  add_foreign_key "maintenance_records", "users", column: "recorded_by_user_id"
   add_foreign_key "maintenance_records", "vehicles"
   add_foreign_key "reliability_profiles", "part_types"
   add_foreign_key "sessions", "users"
+  add_foreign_key "vehicle_access_grants", "identity_organizations", column: "organization_id"
+  add_foreign_key "vehicle_access_grants", "users", column: "granted_by_id"
+  add_foreign_key "vehicle_access_grants", "vehicles"
   add_foreign_key "vehicles", "users"
 end

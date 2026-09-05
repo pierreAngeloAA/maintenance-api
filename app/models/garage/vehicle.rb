@@ -17,6 +17,16 @@ module Garage
     belongs_to :user
 
     has_many :maintenance_records, dependent: :destroy
+    has_many :access_grants, class_name: "Garage::VehicleAccessGrant", dependent: :destroy
+
+    # Los vehiculos que una organizacion puede tocar: los que tienen un permiso
+    # vigente otorgado por su dueno, ni uno mas.
+    scope :accessible_by, ->(organization) {
+      joins(:access_grants)
+        .where(access_grants: { organization_id: organization&.id, revoked_at: nil })
+        .where("access_grants.expires_at IS NULL OR access_grants.expires_at > ?", Time.current)
+        .distinct
+    }
 
     enum :vehicle_type, VEHICLE_TYPES, validate: true
     enum :usage_unit, USAGE_UNITS, validate: true
@@ -40,12 +50,20 @@ module Garage
 
     validate :usage_unit_matches_vehicle_type
 
+    # La consulta al RUNT tarda 30-90 segundos la primera vez: va en background
+    # y nunca dentro del request. Que falle no afecta el registro.
+    after_create_commit :enqueue_runt_lookup, if: -> { plate.present? }
+
     # Piezas del catalogo que aplican a esta clase de vehiculo.
     def part_types
       PartType.for_vehicle_type(vehicle_type)
     end
 
     private
+
+    def enqueue_runt_lookup
+      Runt::VehicleLookupJob.perform_later(id)
+    end
 
     def usage_unit_matches_vehicle_type
       return unless LAND_VEHICLE_TYPES.include?(vehicle_type)
