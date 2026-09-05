@@ -100,4 +100,25 @@ RSpec.describe "Api::V1::Client::MaintenanceRecords", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
   end
+
+  describe "procedencia" do
+    it "lo que registra el dueno queda con procedencia owner" do
+      post "/api/v1/client/vehicles/#{vehicle.id}/maintenance_records",
+        params: { maintenanceRecord: { partTypeId: chain.id, performedOn: "2026-07-15",
+                                       usageAtService: 12_000 } },
+        as: :json, headers: headers
+
+      expect(Garage::MaintenanceRecord.last).to have_attributes(
+        source: "owner", recorded_by_user_id: user.id, recorded_by_organization_id: nil
+      )
+    end
+
+    it "el historial dice que lo registro el dueno" do
+      create(:maintenance_record, vehicle: vehicle, part_type: chain)
+
+      get "/api/v1/client/vehicles/#{vehicle.id}/maintenance_records", headers: headers
+
+      expect(json.first["recordedBy"]).to include("source" => "owner")
+    end
+  end
 end

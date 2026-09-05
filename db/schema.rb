@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_05_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_05_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,10 +52,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_210000) do
     t.string "part_brand"
     t.bigint "part_type_id", null: false
     t.date "performed_on", null: false
+    t.bigint "recorded_by_organization_id"
+    t.bigint "recorded_by_user_id"
+    t.string "source", default: "owner", null: false
     t.datetime "updated_at", null: false
     t.decimal "usage_at_service", precision: 12, scale: 2, null: false
     t.bigint "vehicle_id", null: false
     t.index ["part_type_id"], name: "index_maintenance_records_on_part_type_id"
+    t.index ["recorded_by_organization_id"], name: "index_maintenance_records_on_recorded_by_organization_id"
+    t.index ["recorded_by_user_id"], name: "index_maintenance_records_on_recorded_by_user_id"
+    t.index ["source"], name: "index_maintenance_records_on_source"
     t.index ["vehicle_id", "part_type_id", "usage_at_service"], name: "index_maintenance_records_on_vehicle_part_and_usage"
     t.index ["vehicle_id"], name: "index_maintenance_records_on_vehicle_id"
   end
@@ -142,7 +148,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_210000) do
 
   add_foreign_key "identity_memberships", "identity_organizations", column: "organization_id"
   add_foreign_key "identity_memberships", "users"
+  add_foreign_key "maintenance_records", "identity_organizations", column: "recorded_by_organization_id"
   add_foreign_key "maintenance_records", "part_types"
+  add_foreign_key "maintenance_records", "users", column: "recorded_by_user_id"
   add_foreign_key "maintenance_records", "vehicles"
   add_foreign_key "reliability_profiles", "part_types"
   add_foreign_key "sessions", "users"

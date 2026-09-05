@@ -69,4 +69,27 @@ RSpec.describe "Api::V1::Workshop::MaintenanceRecords", type: :request do
     expect(response).to have_http_status(:unprocessable_content)
     expect(json["errors"]).to have_key("usageAtService")
   end
+
+  it "el registro queda con la procedencia del taller" do
+    create(:vehicle_access_grant, vehicle: vehicle, organization: workshop)
+
+    post_record
+
+    expect(Garage::MaintenanceRecord.last).to have_attributes(
+      source: "workshop",
+      recorded_by_user_id: membership.user.id,
+      recorded_by_organization_id: workshop.id
+    )
+  end
+
+  it "el historial dice quien registro cada mantenimiento" do
+    create(:vehicle_access_grant, vehicle: vehicle, organization: workshop)
+    post_record
+
+    get "/api/v1/workshop/vehicles/#{vehicle.id}/maintenance_records", headers: headers
+
+    expect(json.first["recordedBy"]).to include(
+      "source" => "workshop", "organizationName" => workshop.name
+    )
+  end
 end
