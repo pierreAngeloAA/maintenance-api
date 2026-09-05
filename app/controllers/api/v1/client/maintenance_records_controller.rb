@@ -4,6 +4,9 @@ module Api
       # Historial de mantenimientos del vehiculo: la data que alimenta el modelo
       # de riesgo y la que ninguna API externa puede darnos.
       class MaintenanceRecordsController < ApplicationController
+        # El alcance ya lo pone la consulta: current_user.vehicles.
+        skip_authorization
+
         def index
           records = vehicle.maintenance_records
             .includes(:part_type)

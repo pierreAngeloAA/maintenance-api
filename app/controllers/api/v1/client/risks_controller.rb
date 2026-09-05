@@ -3,6 +3,9 @@ module Api
     module Client
       # Riesgo de falla por pieza, ordenado de mayor a menor.
       class RisksController < ApplicationController
+        # El alcance ya lo pone la consulta: current_user.vehicles.
+        skip_authorization
+
         def show
           vehicle = current_user.vehicles.find(params[:vehicle_id])
           risks = Reliability::RiskCalculator.new(vehicle, horizon: horizon).call

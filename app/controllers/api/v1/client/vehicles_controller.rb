@@ -2,6 +2,9 @@ module Api
   module V1
     module Client
       class VehiclesController < ApplicationController
+        # El alcance ya lo pone la consulta: current_user.vehicles.
+        skip_authorization
+
         def index
           vehicles = current_user.vehicles.order(created_at: :desc)
 
