@@ -109,4 +109,28 @@ RSpec.describe ReliabilityProfile, type: :model do
       expect(profile.failure_probability_at(-5)).to eq(0.0)
     end
   end
+
+  describe "vida acelerada por contexto" do
+    subject(:profile) { build(:reliability_profile, weibull_shape: 2, characteristic_life: 20_000) }
+
+    it "sin factor se comporta igual que antes" do
+      expect(profile.reliability_at(10_000, life_factor: 1.0)).to eq(profile.reliability_at(10_000))
+    end
+
+    it "un factor menor a 1 acorta la vida y sube la probabilidad de falla" do
+      expect(profile.failure_probability_at(10_000, life_factor: 0.5))
+        .to be > profile.failure_probability_at(10_000)
+    end
+
+    it "acortar la vida a la mitad equivale a duplicar el uso" do
+      expect(profile.reliability_at(10_000, life_factor: 0.5))
+        .to be_within(1e-9).of(profile.reliability_at(20_000))
+    end
+
+    it "ignora un factor nulo o absurdo en vez de romper el calculo" do
+      [ nil, 0, -1 ].each do |factor|
+        expect(profile.reliability_at(10_000, life_factor: factor)).to eq(profile.reliability_at(10_000))
+      end
+    end
+  end
 end

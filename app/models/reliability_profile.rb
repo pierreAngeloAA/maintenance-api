@@ -10,6 +10,7 @@
 class ReliabilityProfile < ApplicationRecord
   LIFE_UNITS = %w[km hours months].freeze
   SOURCES = %w[engineering_estimate user_data].freeze
+  NEUTRAL_LIFE_FACTOR = 1.0
 
   belongs_to :part_type
 
@@ -25,15 +26,19 @@ class ReliabilityProfile < ApplicationRecord
   end
 
   # Probabilidad de que la pieza siga sana despues de `usage` de uso.
-  def reliability_at(usage)
+  #
+  # `life_factor` es el ajuste por contexto (clima, terreno): acorta la vida
+  # caracteristica sin tocar la forma de la curva. Un factor invalido o ausente
+  # se ignora, porque el contexto nunca puede romper el calculo de riesgo.
+  def reliability_at(usage, life_factor: NEUTRAL_LIFE_FACTOR)
     usage = usage.to_f
     return 1.0 if usage <= 0
 
-    Math.exp(-((usage / characteristic_life.to_f)**weibull_shape.to_f))
+    Math.exp(-((usage / effective_life(life_factor))**weibull_shape.to_f))
   end
 
-  def failure_probability_at(usage)
-    1.0 - reliability_at(usage)
+  def failure_probability_at(usage, life_factor: NEUTRAL_LIFE_FACTOR)
+    1.0 - reliability_at(usage, life_factor: life_factor)
   end
 
   # True cuando el parametro todavia es una estimacion de ingenieria y no un
@@ -41,5 +46,14 @@ class ReliabilityProfile < ApplicationRecord
   # decirlo: no inventamos precision que no tenemos.
   def estimate?
     source == "engineering_estimate"
+  end
+
+  private
+
+  def effective_life(life_factor)
+    factor = life_factor.to_f
+    factor = NEUTRAL_LIFE_FACTOR unless factor.positive?
+
+    characteristic_life.to_f * factor
   end
 end

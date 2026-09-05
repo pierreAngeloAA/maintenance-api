@@ -55,7 +55,9 @@ RSpec.describe Reliability::RiskCalculator do
     end
 
     it "en la vida caracteristica da 63,2%" do
-      vehicle.update!(usage_value: 20_000)
+      # Sin ciudad para medir la curva pura: con contexto la vida se acorta y el
+      # 63,2% cae antes, que es justo lo que prueba el ajuste por contexto.
+      vehicle.update!(usage_value: 20_000, city: nil)
 
       expect(result_for(chain).failure_probability).to be_within(0.001).of(0.632)
     end
@@ -70,6 +72,8 @@ RSpec.describe Reliability::RiskCalculator do
   describe "riesgo condicional en el proximo tramo" do
     it "una cadena gastada arriesga mucho mas en los proximos 2.000 km que una nueva" do
       # Cadena con 18.000 km encima: R(18000)/R(20000) da ~17% de falla en el tramo.
+      # Sin ciudad para aislar la curva del ajuste por contexto.
+      vehicle.update!(city: nil)
       gastada = described_class.new(vehicle, horizon: 2_000).call.find { |r| r.part_type == chain }
 
       create(:maintenance_record, vehicle: vehicle, part_type: chain, usage_at_service: 18_000)
@@ -140,6 +144,55 @@ RSpec.describe Reliability::RiskCalculator do
       sin_perfil = create(:part_type, code: "misterio", applicable_vehicle_types: %w[motorcycle])
 
       expect(result_for(sin_perfil)).to be_nil
+    end
+  end
+
+  # El mismo repuesto no dura lo mismo en Bogota que en Barranquilla. Se modela
+  # como vida acelerada: cambia eta, no la matematica del riesgo.
+  describe "ajuste por contexto del vehiculo" do
+    let(:brake_pads) { create(:part_type, code: "brake_pads", applicable_vehicle_types: %w[car motorcycle]) }
+    let!(:brake_profile) do
+      create(:reliability_profile,
+        part_type: brake_pads, vehicle_type: "motorcycle",
+        weibull_shape: 2.5, characteristic_life: 25_000, life_unit: "km")
+    end
+
+    def brakes_in(city)
+      vehicle.update!(city: city)
+
+      described_class.new(vehicle.reload).call.find { |result| result.part_type == brake_pads }
+    end
+
+    it "una moto en Bogota arriesga mas los frenos que la misma moto en Barranquilla" do
+      montana = brakes_in("Bogota")
+      plano = brakes_in("Barranquilla")
+
+      expect(montana.conditional_risk).to be > plano.conditional_risk
+    end
+
+    it "expone el factor aplicado para que la interfaz pueda explicarlo" do
+      expect(brakes_in("Bogota").context_factor).to be < 1.0
+      expect(brakes_in("Barranquilla").context_factor).to eq(1.0)
+    end
+
+    it "un vehiculo sin ciudad da exactamente el mismo resultado que antes del ajuste" do
+      sin_ciudad = brakes_in(nil)
+      sin_factor = brake_profile.failure_probability_at(sin_ciudad.usage_since_service)
+
+      expect(sin_ciudad.context_factor).to eq(1.0)
+      expect(sin_ciudad.failure_probability).to be_within(1e-9).of(sin_factor)
+    end
+
+    it "una ciudad desconocida no rompe el calculo: se comporta como sin contexto" do
+      expect(brakes_in("Reikiavik").context_factor).to eq(1.0)
+      expect(brakes_in("Reikiavik").conditional_risk).to be_between(0, 1)
+    end
+
+    it "el contexto no saca la probabilidad del rango [0,1]" do
+      vehicle.update!(usage_value: 900_000)
+
+      expect(brakes_in("Bogota").failure_probability).to be_between(0, 1)
+      expect(brakes_in("Bogota").conditional_risk).to be_between(0, 1)
     end
   end
 end
