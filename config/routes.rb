@@ -27,6 +27,16 @@ Rails.application.routes.draw do
           # Historial de mantenimientos y riesgo de falla por pieza.
           resources :maintenance_records, only: [ :index, :create ]
           resource :risks, only: :show, controller: "risks"
+
+          # Quien tiene acceso a este vehiculo, y como quitarselo.
+          resources :access_grants, only: [ :index, :create, :destroy ]
+        end
+      end
+
+      # App del taller: solo los vehiculos con permiso vigente del dueno.
+      namespace :workshop do
+        resources :vehicles, only: [ :index, :show ] do
+          resources :maintenance_records, only: [ :index, :create ]
         end
       end
     end

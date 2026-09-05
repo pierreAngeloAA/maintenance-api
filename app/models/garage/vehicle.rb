@@ -17,6 +17,16 @@ module Garage
     belongs_to :user
 
     has_many :maintenance_records, dependent: :destroy
+    has_many :access_grants, class_name: "Garage::VehicleAccessGrant", dependent: :destroy
+
+    # Los vehiculos que una organizacion puede tocar: los que tienen un permiso
+    # vigente otorgado por su dueno, ni uno mas.
+    scope :accessible_by, ->(organization) {
+      joins(:access_grants)
+        .where(access_grants: { organization_id: organization&.id, revoked_at: nil })
+        .where("access_grants.expires_at IS NULL OR access_grants.expires_at > ?", Time.current)
+        .distinct
+    }
 
     enum :vehicle_type, VEHICLE_TYPES, validate: true
     enum :usage_unit, USAGE_UNITS, validate: true
