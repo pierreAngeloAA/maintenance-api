@@ -14,7 +14,7 @@ class PartType < ApplicationRecord
     lighting
   ].freeze
 
-  has_many :reliability_profiles, dependent: :destroy
+  has_many :reliability_profiles, class_name: "Reliability::ReliabilityProfile", dependent: :destroy
 
   normalizes :code, with: ->(code) { code.strip.downcase }
 
@@ -32,7 +32,7 @@ class PartType < ApplicationRecord
   private
 
   def applicable_vehicle_types_are_supported
-    unsupported = applicable_vehicle_types.to_a - Vehicle.vehicle_types.keys
+    unsupported = applicable_vehicle_types.to_a - Garage::Vehicle.vehicle_types.keys
 
     errors.add(:applicable_vehicle_types, :inclusion) if unsupported.any?
   end

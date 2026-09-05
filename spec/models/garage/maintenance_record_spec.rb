@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe MaintenanceRecord, type: :model do
+RSpec.describe Garage::MaintenanceRecord, type: :model do
   let(:vehicle) { create(:vehicle, :motorcycle, usage_value: 12_000) }
   let(:drive_chain) { create(:part_type, :drive_chain) }
 

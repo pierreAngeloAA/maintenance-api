@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Vehicle, type: :model do
+RSpec.describe Garage::Vehicle, type: :model do
   describe "atributos basicos" do
     it "es valido con los atributos de la factory" do
       expect(build(:vehicle)).to be_valid

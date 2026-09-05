@@ -48,7 +48,7 @@ RSpec.describe Reliability::RiskCalculator do
       create(:maintenance_record, vehicle: vehicle, part_type: chain, usage_at_service: 17_000)
       poco_uso = result_for(chain).failure_probability
 
-      MaintenanceRecord.delete_all
+      Garage::MaintenanceRecord.delete_all
       mucho_uso = described_class.new(vehicle.reload).call.find { |r| r.part_type == chain }.failure_probability
 
       expect(mucho_uso).to be > poco_uso

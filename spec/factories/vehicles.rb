@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :vehicle do
+  factory :vehicle, class: "Garage::Vehicle" do
     user
     vehicle_type { "car" }
     make { "Renault" }

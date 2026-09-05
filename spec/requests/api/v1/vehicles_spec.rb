@@ -24,7 +24,7 @@ RSpec.describe "Api::V1::Vehicles", type: :request do
 
     it "crea el vehiculo y responde 201" do
       expect { post "/api/v1/vehicles", params: valid_attributes, as: :json, headers: headers }
-        .to change(Vehicle, :count).by(1)
+        .to change(Garage::Vehicle, :count).by(1)
 
       expect(response).to have_http_status(:created)
     end
@@ -142,7 +142,7 @@ RSpec.describe "Api::V1::Vehicles", type: :request do
 
       post "/api/v1/vehicles", params: attributes, as: :json, headers: headers
 
-      expect(Vehicle.find(json["id"]).user).to eq(user)
+      expect(Garage::Vehicle.find(json["id"]).user).to eq(user)
     end
   end
 
