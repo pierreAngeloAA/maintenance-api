@@ -12,7 +12,7 @@ Rails.application.routes.draw do
 
       # Alta de talleres y almacenes: un cliente se vuelve tambien taller o
       # almacen sin crear otra cuenta.
-      resources :organizations, only: :create
+      resources :organizations, only: [ :create, :update ]
 
       # Autocompletado del formulario, compartido por las tres apps. Responde 200
       # aunque NHTSA no conozca el vehiculo: no encontrarlo no es un error.

@@ -48,4 +48,57 @@ RSpec.describe "Api::V1::Organizations", type: :request do
 
     expect(json["errors"]).to have_key("name")
   end
+
+  describe "PATCH /api/v1/organizations/:id" do
+    let(:organization) { create(:organization, name: "Taller El Rayo") }
+
+    def patch_name(role:)
+      create(:membership, user: user, organization: organization, role: role)
+
+      patch "/api/v1/organizations/#{organization.id}",
+        params: { organization: { name: "Taller Nuevo" } }, as: :json,
+        headers: headers.merge("X-Organization-Id" => organization.id.to_s)
+    end
+
+    it "el dueno puede cambiar los datos" do
+      patch_name(role: "owner")
+
+      expect(response).to have_http_status(:ok)
+      expect(organization.reload.name).to eq("Taller Nuevo")
+    end
+
+    it "un vendedor no puede: vende, pero no administra el negocio" do
+      patch_name(role: "clerk")
+
+      expect(response).to have_http_status(:forbidden)
+      expect(organization.reload.name).to eq("Taller El Rayo")
+    end
+
+    it "sin contexto de organizacion tampoco, aunque sea el dueno" do
+      create(:membership, user: user, organization: organization, role: "owner")
+
+      patch "/api/v1/organizations/#{organization.id}",
+        params: { organization: { name: "Taller Nuevo" } }, as: :json, headers: headers
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it "responde 404 si la organizacion no existe" do
+      patch "/api/v1/organizations/0", params: { organization: { name: "X" } },
+        as: :json, headers: headers
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "explica que campo esta mal" do
+      create(:membership, user: user, organization: organization, role: "owner")
+
+      patch "/api/v1/organizations/#{organization.id}",
+        params: { organization: { name: "" } }, as: :json,
+        headers: headers.merge("X-Organization-Id" => organization.id.to_s)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(json["errors"]).to have_key("name")
+    end
+  end
 end

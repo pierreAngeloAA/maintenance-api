@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::API
   include CamelCasePayload
   include Authentication
+  include Authorization
 
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
 
