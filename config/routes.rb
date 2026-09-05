@@ -10,6 +10,10 @@ Rails.application.routes.draw do
       resource :session, only: [ :create, :destroy ], path: "sessions", controller: "sessions"
       get "me", to: "me#show"
 
+      # Alta de talleres y almacenes: un cliente se vuelve tambien taller o
+      # almacen sin crear otra cuenta.
+      resources :organizations, only: :create
+
       # Autocompletado del formulario, compartido por las tres apps. Responde 200
       # aunque NHTSA no conozca el vehiculo: no encontrarlo no es un error.
       get "vin_lookups/:vin", to: "vin_lookups#show", as: :vin_lookup

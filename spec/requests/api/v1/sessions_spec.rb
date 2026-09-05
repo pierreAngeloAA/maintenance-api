@@ -58,7 +58,7 @@ RSpec.describe "Api::V1::Sessions", type: :request do
       get "/api/v1/me", headers: auth_headers_for(user)
 
       expect(response).to have_http_status(:ok)
-      expect(json["email"]).to eq("pierre@example.com")
+      expect(json["user"]["email"]).to eq("pierre@example.com")
     end
 
     it "responde 401 sin token" do

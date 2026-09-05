@@ -10,9 +10,39 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_210852) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_05_200100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "identity_memberships", force: :cascade do |t|
+    t.datetime "accepted_at"
+    t.datetime "created_at", null: false
+    t.datetime "invited_at"
+    t.bigint "organization_id", null: false
+    t.string "role", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["accepted_at"], name: "index_identity_memberships_on_accepted_at"
+    t.index ["organization_id"], name: "index_identity_memberships_on_organization_id"
+    t.index ["user_id", "organization_id"], name: "index_identity_memberships_on_user_id_and_organization_id", unique: true
+    t.index ["user_id"], name: "index_identity_memberships_on_user_id"
+  end
+
+  create_table "identity_organizations", force: :cascade do |t|
+    t.string "city"
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.decimal "latitude", precision: 9, scale: 6
+    t.decimal "longitude", precision: 9, scale: 6
+    t.string "name", null: false
+    t.string "nit"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "verified_at"
+    t.index ["kind"], name: "index_identity_organizations_on_kind"
+    t.index ["nit"], name: "index_identity_organizations_on_nit", unique: true, where: "(nit IS NOT NULL)"
+    t.index ["status"], name: "index_identity_organizations_on_status"
+  end
 
   create_table "maintenance_records", force: :cascade do |t|
     t.integer "cost_cents"
@@ -93,6 +123,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_210852) do
     t.index ["vin"], name: "index_vehicles_on_vin", unique: true, where: "(vin IS NOT NULL)"
   end
 
+  add_foreign_key "identity_memberships", "identity_organizations", column: "organization_id"
+  add_foreign_key "identity_memberships", "users"
   add_foreign_key "maintenance_records", "part_types"
   add_foreign_key "maintenance_records", "vehicles"
   add_foreign_key "reliability_profiles", "part_types"
