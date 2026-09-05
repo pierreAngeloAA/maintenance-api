@@ -43,30 +43,30 @@ RSpec.describe ReliabilityProfileCatalog do
     before { PartTypeCatalog.load! }
 
     it "carga los perfiles" do
-      expect { described_class.load! }.to change(ReliabilityProfile, :count).from(0)
+      expect { described_class.load! }.to change(Reliability::ReliabilityProfile, :count).from(0)
     end
 
     it "es idempotente" do
       described_class.load!
 
-      expect { described_class.load! }.not_to change(ReliabilityProfile, :count)
+      expect { described_class.load! }.not_to change(Reliability::ReliabilityProfile, :count)
     end
 
     it "todos los perfiles cargados son validos" do
       described_class.load!
 
-      expect(ReliabilityProfile.all).to all(be_valid)
+      expect(Reliability::ReliabilityProfile.all).to all(be_valid)
     end
 
     it "marca los perfiles como estimacion de ingenieria" do
       described_class.load!
 
-      expect(ReliabilityProfile.all).to all(be_estimate)
+      expect(Reliability::ReliabilityProfile.all).to all(be_estimate)
     end
 
     it "no pisa un perfil ya calculado con datos de usuarios" do
       described_class.load!
-      profile = ReliabilityProfile.first
+      profile = Reliability::ReliabilityProfile.first
       profile.update!(source: "user_data", characteristic_life: 12_345)
 
       described_class.load!
@@ -84,8 +84,8 @@ RSpec.describe ReliabilityProfileCatalog do
 
     it "el aceite de moto se cambia mucho antes que el de auto" do
       oil = PartType.find_by!(code: "engine_oil")
-      moto = ReliabilityProfile.for(oil, "motorcycle")
-      car = ReliabilityProfile.for(oil, "car")
+      moto = Reliability::ReliabilityProfile.for(oil, "motorcycle")
+      car = Reliability::ReliabilityProfile.for(oil, "car")
 
       expect(moto.characteristic_life).to be < car.characteristic_life
     end
@@ -99,8 +99,8 @@ RSpec.describe ReliabilityProfileCatalog do
     end
 
     it "el bombillo falla de forma casi aleatoria y la correa por desgaste marcado" do
-      bulb = ReliabilityProfile.for(PartType.find_by!(code: "headlight_bulb"), "car")
-      belt = ReliabilityProfile.for(PartType.find_by!(code: "timing_belt"), "car")
+      bulb = Reliability::ReliabilityProfile.for(PartType.find_by!(code: "headlight_bulb"), "car")
+      belt = Reliability::ReliabilityProfile.for(PartType.find_by!(code: "timing_belt"), "car")
 
       expect(bulb.weibull_shape).to be < 1.5
       expect(belt.weibull_shape).to be > 3

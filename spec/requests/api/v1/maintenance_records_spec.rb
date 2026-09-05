@@ -24,7 +24,7 @@ RSpec.describe "Api::V1::MaintenanceRecords", type: :request do
 
     it "registra el mantenimiento y responde 201" do
       expect { post "/api/v1/vehicles/#{vehicle.id}/maintenance_records", params: valid_attributes, as: :json, headers: headers }
-        .to change(MaintenanceRecord, :count).by(1)
+        .to change(Garage::MaintenanceRecord, :count).by(1)
 
       expect(response).to have_http_status(:created)
       expect(json["partBrand"]).to eq("DID")

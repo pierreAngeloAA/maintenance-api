@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Vehicle, "#part_types", type: :model do
+RSpec.describe Garage::Vehicle, "#part_types", type: :model do
   it "devuelve las piezas del catalogo que aplican a la moto" do
     chain = create(:part_type, :drive_chain)
     create(:part_type, :timing_belt)

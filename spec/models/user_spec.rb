@@ -59,7 +59,7 @@ RSpec.describe User, type: :model do
       create(:vehicle, user: user)
       user.sessions.create!
 
-      expect { user.destroy }.to change(Vehicle, :count).by(-1).and change(Session, :count).by(-1)
+      expect { user.destroy }.to change(Garage::Vehicle, :count).by(-1).and change(Session, :count).by(-1)
     end
   end
 end

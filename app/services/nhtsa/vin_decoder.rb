@@ -50,7 +50,7 @@ module Nhtsa
 
     def normalize(vin)
       normalized = vin.to_s.gsub(/\s+/, "").upcase
-      normalized.match?(Vehicle::VIN_FORMAT) ? normalized : nil
+      normalized.match?(Garage::Vehicle::VIN_FORMAT) ? normalized : nil
     end
 
     def fetch(vin)
