@@ -50,12 +50,20 @@ module Garage
 
     validate :usage_unit_matches_vehicle_type
 
+    # La consulta al RUNT tarda 30-90 segundos la primera vez: va en background
+    # y nunca dentro del request. Que falle no afecta el registro.
+    after_create_commit :enqueue_runt_lookup, if: -> { plate.present? }
+
     # Piezas del catalogo que aplican a esta clase de vehiculo.
     def part_types
       PartType.for_vehicle_type(vehicle_type)
     end
 
     private
+
+    def enqueue_runt_lookup
+      Runt::VehicleLookupJob.perform_later(id)
+    end
 
     def usage_unit_matches_vehicle_type
       return unless LAND_VEHICLE_TYPES.include?(vehicle_type)
