@@ -18,6 +18,7 @@ module Garage
 
     has_many :maintenance_records, dependent: :destroy
     has_many :access_grants, class_name: "Garage::VehicleAccessGrant", dependent: :destroy
+    has_many :health_reports, class_name: "Diagnostics::HealthReport", dependent: :destroy
 
     # Los vehiculos que una organizacion puede tocar: los que tienen un permiso
     # vigente otorgado por su dueno, ni uno mas.

@@ -30,6 +30,10 @@ Rails.application.routes.draw do
 
           # Quien tiene acceso a este vehiculo, y como quitarselo.
           resources :access_grants, only: [ :index, :create, :destroy ]
+
+          # El diagnostico del mes y el historial de los anteriores.
+          resource :health_report, only: :show
+          resources :health_reports, only: :index
         end
 
         # Lo que el cliente pide para sus vehiculos.
