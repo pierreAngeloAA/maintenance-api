@@ -121,4 +121,29 @@ RSpec.describe "Api::V1::Client::MaintenanceRecords", type: :request do
       expect(json.first["recordedBy"]).to include("source" => "owner")
     end
   end
+
+  describe "repuesto del catalogo" do
+    let(:product) { create(:product, part_type: chain, brand: "DID") }
+
+    it "el historial muestra la marca normalizada y no el texto libre" do
+      post "/api/v1/client/vehicles/#{vehicle.id}/maintenance_records",
+        params: { maintenanceRecord: { partTypeId: chain.id, performedOn: "2026-07-15",
+                                       usageAtService: 12_000, catalogProductId: product.id,
+                                       partBrand: "did mal escrito" } },
+        as: :json, headers: headers
+
+      expect(response).to have_http_status(:created)
+      expect(json["partBrand"]).to eq("DID")
+      expect(json["catalogProduct"]).to include("brand" => "DID", "sku" => product.sku)
+    end
+
+    it "sin producto del catalogo, el campo viaja nulo" do
+      create(:maintenance_record, vehicle: vehicle, part_type: chain, part_brand: "suelta")
+
+      get "/api/v1/client/vehicles/#{vehicle.id}/maintenance_records", headers: headers
+
+      expect(json.first["catalogProduct"]).to be_nil
+      expect(json.first["partBrand"]).to eq("suelta")
+    end
+  end
 end

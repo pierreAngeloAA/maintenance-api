@@ -17,16 +17,11 @@ ajusta por contexto real:
 La ventaja competitiva a largo plazo es la **data propia de los usuarios** (que pieza cambiaron,
 cuando, en que ciudad, con que estilo de manejo), imposible de replicar con APIs externas genericas.
 
-## 2. Stack
+## 2. Decisiones de stack que el Gemfile no explica
 
-- Ruby on Rails 8.1 en modo `--api`
-- PostgreSQL (NO SQLite: Render no persiste el filesystem)
-- RSpec + FactoryBot + Faker + shoulda-matchers + SimpleCov
-- WebMock + VCR para las APIs externas
-- Faraday como cliente HTTP
-- Despliegue en Render (ver `render.yaml`)
-
-El frontend Angular vive en el repo separado `maintenance-web`.
+- **PostgreSQL, nunca SQLite**: Render no persiste el filesystem.
+- Las APIs externas se testean **siempre** con VCR o WebMock, jamas pegandole a la API real.
+- El frontend Angular vive en el repo separado `maintenance-web`.
 
 ## 3. APIs externas (todas gratuitas)
 
@@ -49,15 +44,12 @@ modelo.
 
 ## 4. Setup local
 
-```bash
-bundle install
-cp .env.example .env      # completar OPENWEATHER_API_KEY
-bin/rails db:create db:migrate
-bin/rails s               # http://localhost:3000
-bundle exec rspec
-```
+Lo estandar de Rails (`bundle install`, `bin/rails db:create db:migrate`, `bin/rails s`,
+`bundle exec rspec`). Lo que no es adivinable:
 
-`.env` no se commitea. Las variables de produccion se configuran en el dashboard de Render.
+- `cp .env.example .env`. Todas las claves son **opcionales**: sin `PLACAPI_API_KEY` el
+  enriquecimiento del RUNT simplemente no ocurre y nada se rompe.
+- `.env` no se commitea. Las variables de produccion se configuran en el dashboard de Render.
 
 ## 5. Base de datos en Render
 

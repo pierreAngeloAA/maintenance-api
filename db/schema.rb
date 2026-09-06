@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_120200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,40 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "catalog_fitments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "make"
+    t.string "model"
+    t.bigint "product_id", null: false
+    t.datetime "updated_at", null: false
+    t.string "vehicle_type", null: false
+    t.integer "year_from"
+    t.integer "year_to"
+    t.index ["product_id", "vehicle_type"], name: "index_catalog_fitments_on_product_id_and_vehicle_type"
+    t.index ["product_id"], name: "index_catalog_fitments_on_product_id"
+    t.index ["vehicle_type", "make", "model"], name: "index_catalog_fitments_on_vehicle_type_and_make_and_model"
+  end
+
+  create_table "catalog_products", force: :cascade do |t|
+    t.string "brand", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "COP", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.bigint "organization_id", null: false
+    t.bigint "part_type_id"
+    t.string "sku"
+    t.string "status", default: "draft", null: false
+    t.integer "stock_quantity", default: 0, null: false
+    t.integer "unit_price_cents", null: false
+    t.datetime "updated_at", null: false
+    t.index ["brand"], name: "index_catalog_products_on_brand"
+    t.index ["organization_id", "sku"], name: "index_catalog_products_on_organization_id_and_sku", unique: true, where: "(sku IS NOT NULL)"
+    t.index ["organization_id", "status"], name: "index_catalog_products_on_organization_id_and_status"
+    t.index ["organization_id"], name: "index_catalog_products_on_organization_id"
+    t.index ["part_type_id"], name: "index_catalog_products_on_part_type_id"
   end
 
   create_table "diagnostics_health_reports", force: :cascade do |t|
@@ -158,6 +192,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
   end
 
   create_table "maintenance_records", force: :cascade do |t|
+    t.bigint "catalog_product_id"
     t.integer "cost_cents"
     t.datetime "created_at", null: false
     t.string "currency", default: "COP", null: false
@@ -171,12 +206,59 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
     t.datetime "updated_at", null: false
     t.decimal "usage_at_service", precision: 12, scale: 2, null: false
     t.bigint "vehicle_id", null: false
+    t.index ["catalog_product_id"], name: "index_maintenance_records_on_catalog_product_id"
     t.index ["part_type_id"], name: "index_maintenance_records_on_part_type_id"
     t.index ["recorded_by_organization_id"], name: "index_maintenance_records_on_recorded_by_organization_id"
     t.index ["recorded_by_user_id"], name: "index_maintenance_records_on_recorded_by_user_id"
     t.index ["source"], name: "index_maintenance_records_on_source"
     t.index ["vehicle_id", "part_type_id", "usage_at_service"], name: "index_maintenance_records_on_vehicle_part_and_usage"
     t.index ["vehicle_id"], name: "index_maintenance_records_on_vehicle_id"
+  end
+
+  create_table "orders_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "order_id", null: false
+    t.string "product_brand", null: false
+    t.bigint "product_id"
+    t.string "product_name", null: false
+    t.string "product_sku"
+    t.integer "quantity", null: false
+    t.integer "unit_price_cents", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_id"], name: "index_orders_items_on_order_id"
+    t.index ["product_id"], name: "index_orders_items_on_product_id"
+  end
+
+  create_table "orders_orders", force: :cascade do |t|
+    t.string "address"
+    t.bigint "buyer_id", null: false
+    t.string "buyer_type", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "COP", null: false
+    t.decimal "latitude", precision: 9, scale: 6
+    t.decimal "longitude", precision: 9, scale: 6
+    t.datetime "placed_at", null: false
+    t.bigint "seller_organization_id", null: false
+    t.string "status", default: "pending", null: false
+    t.integer "subtotal_cents", default: 0, null: false
+    t.integer "total_cents", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["buyer_type", "buyer_id"], name: "index_orders_orders_on_buyer"
+    t.index ["seller_organization_id", "status"], name: "index_orders_orders_on_seller_organization_id_and_status"
+    t.index ["seller_organization_id"], name: "index_orders_orders_on_seller_organization_id"
+    t.index ["status"], name: "index_orders_orders_on_status"
+  end
+
+  create_table "orders_payments", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.datetime "created_at", null: false
+    t.string "gateway", null: false
+    t.string "gateway_ref"
+    t.bigint "order_id", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["gateway", "gateway_ref"], name: "index_orders_payments_on_gateway_and_gateway_ref", unique: true, where: "(gateway_ref IS NOT NULL)"
+    t.index ["order_id"], name: "index_orders_payments_on_order_id"
   end
 
   create_table "part_types", force: :cascade do |t|
@@ -318,6 +400,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "catalog_fitments", "catalog_products", column: "product_id"
+  add_foreign_key "catalog_products", "identity_organizations", column: "organization_id"
+  add_foreign_key "catalog_products", "part_types"
   add_foreign_key "diagnostics_health_reports", "vehicles"
   add_foreign_key "diagnostics_inspection_items", "diagnostics_inspection_templates", column: "template_id"
   add_foreign_key "diagnostics_inspection_items", "part_types"
@@ -331,10 +416,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
   add_foreign_key "diagnostics_observations", "part_types"
   add_foreign_key "identity_memberships", "identity_organizations", column: "organization_id"
   add_foreign_key "identity_memberships", "users"
+  add_foreign_key "maintenance_records", "catalog_products", on_delete: :nullify
   add_foreign_key "maintenance_records", "identity_organizations", column: "recorded_by_organization_id"
   add_foreign_key "maintenance_records", "part_types"
   add_foreign_key "maintenance_records", "users", column: "recorded_by_user_id"
   add_foreign_key "maintenance_records", "vehicles"
+  add_foreign_key "orders_items", "catalog_products", column: "product_id", on_delete: :nullify
+  add_foreign_key "orders_items", "orders_orders", column: "order_id"
+  add_foreign_key "orders_orders", "identity_organizations", column: "seller_organization_id"
+  add_foreign_key "orders_payments", "orders_orders", column: "order_id"
   add_foreign_key "reliability_profiles", "part_types"
   add_foreign_key "services_offers", "identity_organizations", column: "organization_id"
   add_foreign_key "services_offers", "services_requests", column: "request_id"
