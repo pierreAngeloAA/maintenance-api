@@ -15,4 +15,8 @@ class Current < ActiveSupport::CurrentAttributes
   def workshop?
     organization&.workshop? || false
   end
+
+  def store?
+    organization&.store? || false
+  end
 end

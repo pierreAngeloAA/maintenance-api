@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_100100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,40 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "catalog_fitments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "make"
+    t.string "model"
+    t.bigint "product_id", null: false
+    t.datetime "updated_at", null: false
+    t.string "vehicle_type", null: false
+    t.integer "year_from"
+    t.integer "year_to"
+    t.index ["product_id", "vehicle_type"], name: "index_catalog_fitments_on_product_id_and_vehicle_type"
+    t.index ["product_id"], name: "index_catalog_fitments_on_product_id"
+    t.index ["vehicle_type", "make", "model"], name: "index_catalog_fitments_on_vehicle_type_and_make_and_model"
+  end
+
+  create_table "catalog_products", force: :cascade do |t|
+    t.string "brand", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "COP", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.bigint "organization_id", null: false
+    t.bigint "part_type_id"
+    t.string "sku"
+    t.string "status", default: "draft", null: false
+    t.integer "stock_quantity", default: 0, null: false
+    t.integer "unit_price_cents", null: false
+    t.datetime "updated_at", null: false
+    t.index ["brand"], name: "index_catalog_products_on_brand"
+    t.index ["organization_id", "sku"], name: "index_catalog_products_on_organization_id_and_sku", unique: true, where: "(sku IS NOT NULL)"
+    t.index ["organization_id", "status"], name: "index_catalog_products_on_organization_id_and_status"
+    t.index ["organization_id"], name: "index_catalog_products_on_organization_id"
+    t.index ["part_type_id"], name: "index_catalog_products_on_part_type_id"
   end
 
   create_table "diagnostics_health_reports", force: :cascade do |t|
@@ -318,6 +352,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "catalog_fitments", "catalog_products", column: "product_id"
+  add_foreign_key "catalog_products", "identity_organizations", column: "organization_id"
+  add_foreign_key "catalog_products", "part_types"
   add_foreign_key "diagnostics_health_reports", "vehicles"
   add_foreign_key "diagnostics_inspection_items", "diagnostics_inspection_templates", column: "template_id"
   add_foreign_key "diagnostics_inspection_items", "part_types"

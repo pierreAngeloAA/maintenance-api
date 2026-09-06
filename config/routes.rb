@@ -34,6 +34,9 @@ Rails.application.routes.draw do
           # El diagnostico del mes y el historial de los anteriores.
           resource :health_report, only: :show
           resources :health_reports, only: :index
+
+          # Repuestos que sirven para este vehiculo.
+          resources :products, only: :index
         end
 
         # Lo que el cliente pide para sus vehiculos.
@@ -54,6 +57,14 @@ Rails.application.routes.draw do
         # medida que el tecnico avanza, no todas al cerrar.
         resources :inspections, only: [ :show, :create, :update ] do
           resources :observations, only: :create
+        end
+      end
+
+      # App del almacen: su catalogo y sus ventas.
+      namespace :store do
+        resources :products, only: [ :index, :create, :update ] do
+          # Para que vehiculos sirve cada producto.
+          resources :fitments, only: [ :index, :create, :destroy ]
         end
       end
     end
