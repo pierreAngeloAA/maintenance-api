@@ -45,6 +45,12 @@ Rails.application.routes.draw do
         # Tomar servicios y llevarlos hasta el cierre.
         resources :service_offers, only: [ :index, :update, :destroy ]
         resources :service_orders, only: [ :index, :update ]
+
+        # La visita de 30 minutos. Las mediciones se guardan una por una a
+        # medida que el tecnico avanza, no todas al cerrar.
+        resources :inspections, only: [ :show, :create, :update ] do
+          resources :observations, only: :create
+        end
       end
     end
   end

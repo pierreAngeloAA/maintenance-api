@@ -1,0 +1,81 @@
+# Checklist de la visita de 30 minutos.
+#
+# PROVISIONAL: esta es la propuesta de la seccion 5 del CLAUDE.md del workspace.
+# El contenido definitivo lo cierra el usuario. Por eso la plantilla se versiona:
+# cambiarla es publicar la version siguiente, no editar esta.
+#
+# - `phase`: engine_off (apagado) / engine_idle (encendido quieto) / driving (andando)
+#   Ojo: `off` e `idle` sin comillas los interpreta YAML como booleanos.
+# - `value_type`: numeric (con unidad) / scale (1 a 4, peor a mejor) / boolean / date
+#
+# La regla que sostiene todo: numeros y escalas cerradas, nunca texto libre. Si
+# el tecnico escribe "llantas regulares" se pierde la velocidad de desgaste, que
+# es lo que hace valiosa la visita.
+
+- code: monthly_car
+  version: 1
+  vehicle_type: car
+  items:
+    # --- Fase 1: motor apagado (~12 min) ---
+    - { code: engine_oil_level,    label: "Nivel y color del aceite de motor", phase: engine_off, value_type: scale, part_code: engine_oil }
+    - { code: coolant_level,       label: "Nivel de refrigerante",             phase: engine_off, value_type: scale, part_code: coolant }
+    - { code: brake_fluid_level,   label: "Nivel y color del liquido de frenos", phase: engine_off, value_type: scale, part_code: brake_fluid }
+    - { code: tire_tread_fl,       label: "Labrado llanta delantera izquierda", phase: engine_off, value_type: numeric, unit: mm, minimum: 0, maximum: 20, part_code: tires }
+    - { code: tire_tread_fr,       label: "Labrado llanta delantera derecha",   phase: engine_off, value_type: numeric, unit: mm, minimum: 0, maximum: 20, part_code: tires }
+    - { code: tire_tread_rl,       label: "Labrado llanta trasera izquierda",   phase: engine_off, value_type: numeric, unit: mm, minimum: 0, maximum: 20, part_code: tires }
+    - { code: tire_tread_rr,       label: "Labrado llanta trasera derecha",     phase: engine_off, value_type: numeric, unit: mm, minimum: 0, maximum: 20, part_code: tires }
+    - { code: tire_pressure_front, label: "Presion llantas delanteras",         phase: engine_off, value_type: numeric, unit: psi, minimum: 0, maximum: 80, part_code: tires }
+    - { code: tire_pressure_rear,  label: "Presion llantas traseras",           phase: engine_off, value_type: numeric, unit: psi, minimum: 0, maximum: 80, part_code: tires }
+    - { code: tire_uneven_wear,    label: "Desgaste irregular en las llantas",  phase: engine_off, value_type: boolean, part_code: shock_absorbers }
+    - { code: tire_dot_date,       label: "Fecha DOT del caucho",               phase: engine_off, value_type: date, part_code: tires }
+    - { code: brake_pad_thickness, label: "Espesor visible de pastillas",       phase: engine_off, value_type: numeric, unit: mm, minimum: 0, maximum: 25, part_code: brake_pads }
+    - { code: battery_terminals,   label: "Bornes de la bateria",               phase: engine_off, value_type: scale, part_code: battery }
+    - { code: battery_date,        label: "Fecha de la bateria",                phase: engine_off, value_type: date, part_code: battery }
+    - { code: belts_condition,     label: "Correas y mangueras",                phase: engine_off, value_type: scale, part_code: serpentine_belt }
+    - { code: air_filter_state,    label: "Filtro de aire",                     phase: engine_off, value_type: scale, part_code: air_filter }
+    - { code: fluid_leaks,         label: "Manchas o fugas debajo",             phase: engine_off, value_type: boolean }
+    - { code: wiper_state,         label: "Plumillas",                          phase: engine_off, value_type: scale, part_code: wiper_blades }
+
+    # --- Fase 2: encendido quieto (~5 min) ---
+    - { code: dashboard_warnings,  label: "Testigos encendidos en el tablero",  phase: engine_idle, value_type: boolean }
+    - { code: obd_error_codes,     label: "Codigos de falla en el escaner OBD2", phase: engine_idle, value_type: boolean }
+    - { code: exhaust_smoke,       label: "Color del humo del escape",          phase: engine_idle, value_type: scale }
+    - { code: cold_start_noise,    label: "Ruidos anormales al arranque",       phase: engine_idle, value_type: boolean }
+    - { code: air_conditioning,    label: "El aire acondicionado enfria",       phase: engine_idle, value_type: boolean }
+    - { code: lights_all,          label: "Todas las luces funcionan",          phase: engine_idle, value_type: boolean, part_code: headlight_bulb }
+
+    # --- Fase 3: andando 5-10 min ---
+    - { code: braking_behavior,    label: "Frenado: vibracion, ruido o tiron",  phase: driving, value_type: scale, part_code: brake_pads }
+    - { code: steering_behavior,   label: "Direccion: juego, centrado, vibracion", phase: driving, value_type: scale }
+    - { code: suspension_behavior, label: "Suspension en resaltos",             phase: driving, value_type: scale, part_code: shock_absorbers }
+    - { code: transmission_behavior, label: "Caja y embrague",                  phase: driving, value_type: scale, part_code: transmission_fluid }
+    - { code: bearing_noise,       label: "Ruidos de rodamientos al girar",     phase: driving, value_type: boolean }
+
+- code: monthly_motorcycle
+  version: 1
+  vehicle_type: motorcycle
+  items:
+    - { code: engine_oil_level,    label: "Nivel y color del aceite de motor",  phase: engine_off, value_type: scale, part_code: engine_oil }
+    - { code: brake_fluid_level,   label: "Nivel y color del liquido de frenos", phase: engine_off, value_type: scale, part_code: brake_fluid }
+    - { code: tire_tread_front,    label: "Labrado llanta delantera",           phase: engine_off, value_type: numeric, unit: mm, minimum: 0, maximum: 20, part_code: tires }
+    - { code: tire_tread_rear,     label: "Labrado llanta trasera",             phase: engine_off, value_type: numeric, unit: mm, minimum: 0, maximum: 20, part_code: tires }
+    - { code: tire_pressure_front, label: "Presion llanta delantera",           phase: engine_off, value_type: numeric, unit: psi, minimum: 0, maximum: 60, part_code: tires }
+    - { code: tire_pressure_rear,  label: "Presion llanta trasera",             phase: engine_off, value_type: numeric, unit: psi, minimum: 0, maximum: 60, part_code: tires }
+    - { code: chain_slack,         label: "Juego de la cadena",                 phase: engine_off, value_type: numeric, unit: mm, minimum: 0, maximum: 100, part_code: drive_chain }
+    - { code: chain_lubrication,   label: "Lubricacion de la cadena",           phase: engine_off, value_type: scale, part_code: drive_chain }
+    - { code: sprocket_wear,       label: "Desgaste del kit de arrastre",       phase: engine_off, value_type: scale, part_code: chain_sprocket_kit }
+    - { code: brake_pad_thickness, label: "Espesor visible de pastillas",       phase: engine_off, value_type: numeric, unit: mm, minimum: 0, maximum: 25, part_code: brake_pads }
+    - { code: battery_terminals,   label: "Bornes de la bateria",               phase: engine_off, value_type: scale, part_code: battery }
+    - { code: air_filter_state,    label: "Filtro de aire",                     phase: engine_off, value_type: scale, part_code: air_filter }
+    - { code: fork_oil_leak,       label: "Fugas en la horquilla",              phase: engine_off, value_type: boolean, part_code: fork_oil }
+    - { code: fluid_leaks,         label: "Manchas o fugas debajo",             phase: engine_off, value_type: boolean }
+
+    - { code: dashboard_warnings,  label: "Testigos encendidos en el tablero",  phase: engine_idle, value_type: boolean }
+    - { code: exhaust_smoke,       label: "Color del humo del escape",          phase: engine_idle, value_type: scale }
+    - { code: cold_start_noise,    label: "Ruidos anormales al arranque",       phase: engine_idle, value_type: boolean }
+    - { code: lights_all,          label: "Todas las luces funcionan",          phase: engine_idle, value_type: boolean, part_code: headlight_bulb }
+
+    - { code: braking_behavior,    label: "Frenado: vibracion, ruido o tiron",  phase: driving, value_type: scale, part_code: brake_pads }
+    - { code: steering_behavior,   label: "Direccion y estabilidad",            phase: driving, value_type: scale }
+    - { code: suspension_behavior, label: "Suspension en resaltos",             phase: driving, value_type: scale, part_code: shock_absorbers }
+    - { code: clutch_behavior,     label: "Embrague",                           phase: driving, value_type: scale, part_code: clutch_cable }
