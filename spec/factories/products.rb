@@ -28,3 +28,14 @@ FactoryBot.define do
     year_to { 2020 }
   end
 end
+
+FactoryBot.define do
+  factory :order, class: "Orders::Order" do
+    buyer { create(:user) }
+    seller_organization { create(:organization, :store) }
+    status { "pending" }
+    placed_at { Time.current }
+    subtotal_cents { 10_000 }
+    total_cents { 10_000 }
+  end
+end

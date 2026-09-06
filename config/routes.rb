@@ -41,6 +41,9 @@ Rails.application.routes.draw do
 
         # Lo que el cliente pide para sus vehiculos.
         resources :service_requests, only: [ :index, :create, :destroy ]
+
+        # Compras de repuestos.
+        resources :orders, only: [ :index, :show, :create ]
       end
 
       # App del taller: solo los vehiculos con permiso vigente del dueno.
@@ -52,6 +55,9 @@ Rails.application.routes.draw do
         # Tomar servicios y llevarlos hasta el cierre.
         resources :service_offers, only: [ :index, :update, :destroy ]
         resources :service_orders, only: [ :index, :update ]
+
+        # El taller compra repuestos para sus trabajos.
+        resources :orders, only: [ :index, :create ]
 
         # La visita de 30 minutos. Las mediciones se guardan una por una a
         # medida que el tecnico avanza, no todas al cerrar.
@@ -66,6 +72,9 @@ Rails.application.routes.draw do
           # Para que vehiculos sirve cada producto.
           resources :fitments, only: [ :index, :create, :destroy ]
         end
+
+        # Sus ventas.
+        resources :orders, only: [ :index, :update ]
       end
     end
   end
