@@ -14,6 +14,8 @@ module Garage
     belongs_to :vehicle
     belongs_to :organization, class_name: "Identity::Organization"
     belongs_to :granted_by, class_name: "User"
+    # Cuando nace de un servicio, muere con el.
+    belongs_to :service_order, class_name: "Services::Order", optional: true
 
     enum :access_level, ACCESS_LEVELS, validate: true, prefix: :access
 

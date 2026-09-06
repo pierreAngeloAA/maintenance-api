@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_05_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_000300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,6 +91,56 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_230000) do
     t.index ["part_type_id"], name: "index_reliability_profiles_on_part_type_id"
   end
 
+  create_table "services_offers", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.bigint "organization_id", null: false
+    t.integer "price_cents"
+    t.bigint "request_id", null: false
+    t.string "status", default: "offered", null: false
+    t.bigint "technician_user_id"
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_services_offers_on_organization_id"
+    t.index ["request_id", "organization_id"], name: "index_services_offers_on_request_id_and_organization_id", unique: true
+    t.index ["request_id"], name: "index_services_offers_on_request_id"
+    t.index ["status"], name: "index_services_offers_on_status"
+    t.index ["technician_user_id"], name: "index_services_offers_on_technician_user_id"
+  end
+
+  create_table "services_orders", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.bigint "organization_id", null: false
+    t.bigint "request_id", null: false
+    t.datetime "started_at"
+    t.string "status", default: "assigned", null: false
+    t.bigint "technician_user_id", null: false
+    t.integer "total_cents"
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_services_orders_on_organization_id"
+    t.index ["request_id"], name: "index_services_orders_on_request_id", unique: true
+    t.index ["status"], name: "index_services_orders_on_status"
+    t.index ["technician_user_id"], name: "index_services_orders_on_technician_user_id"
+  end
+
+  create_table "services_requests", force: :cascade do |t|
+    t.string "address"
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.decimal "latitude", precision: 9, scale: 6
+    t.decimal "longitude", precision: 9, scale: 6
+    t.text "notes"
+    t.bigint "requested_by_user_id", null: false
+    t.datetime "scheduled_for"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "vehicle_id", null: false
+    t.index ["kind"], name: "index_services_requests_on_kind"
+    t.index ["requested_by_user_id"], name: "index_services_requests_on_requested_by_user_id"
+    t.index ["status"], name: "index_services_requests_on_status"
+    t.index ["vehicle_id"], name: "index_services_requests_on_vehicle_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "token_digest", null: false
@@ -117,11 +167,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_230000) do
     t.bigint "granted_by_id", null: false
     t.bigint "organization_id", null: false
     t.datetime "revoked_at"
+    t.bigint "service_order_id"
     t.datetime "updated_at", null: false
     t.bigint "vehicle_id", null: false
     t.index ["expires_at"], name: "index_vehicle_access_grants_on_expires_at"
     t.index ["granted_by_id"], name: "index_vehicle_access_grants_on_granted_by_id"
     t.index ["organization_id"], name: "index_vehicle_access_grants_on_organization_id"
+    t.index ["service_order_id"], name: "index_vehicle_access_grants_on_service_order_id"
     t.index ["vehicle_id", "organization_id"], name: "index_vehicle_access_grants_vigentes", unique: true, where: "(revoked_at IS NULL)"
     t.index ["vehicle_id"], name: "index_vehicle_access_grants_on_vehicle_id"
   end
@@ -158,8 +210,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_230000) do
   add_foreign_key "maintenance_records", "users", column: "recorded_by_user_id"
   add_foreign_key "maintenance_records", "vehicles"
   add_foreign_key "reliability_profiles", "part_types"
+  add_foreign_key "services_offers", "identity_organizations", column: "organization_id"
+  add_foreign_key "services_offers", "services_requests", column: "request_id"
+  add_foreign_key "services_offers", "users", column: "technician_user_id"
+  add_foreign_key "services_orders", "identity_organizations", column: "organization_id"
+  add_foreign_key "services_orders", "services_requests", column: "request_id"
+  add_foreign_key "services_orders", "users", column: "technician_user_id"
+  add_foreign_key "services_requests", "users", column: "requested_by_user_id"
+  add_foreign_key "services_requests", "vehicles"
   add_foreign_key "sessions", "users"
   add_foreign_key "vehicle_access_grants", "identity_organizations", column: "organization_id"
+  add_foreign_key "vehicle_access_grants", "services_orders", column: "service_order_id"
   add_foreign_key "vehicle_access_grants", "users", column: "granted_by_id"
   add_foreign_key "vehicle_access_grants", "vehicles"
   add_foreign_key "vehicles", "users"
