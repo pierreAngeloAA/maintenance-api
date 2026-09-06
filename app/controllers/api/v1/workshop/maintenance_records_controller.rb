@@ -39,7 +39,7 @@ module Api
         def maintenance_record_params
           underscored_params.require(:maintenance_record).permit(
             :part_type_id, :performed_on, :usage_at_service,
-            :part_brand, :cost_cents, :currency, :notes
+            :part_brand, :cost_cents, :currency, :notes, :catalog_product_id
           )
         end
       end

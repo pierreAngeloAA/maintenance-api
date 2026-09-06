@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_100100) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -192,6 +192,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_100100) do
   end
 
   create_table "maintenance_records", force: :cascade do |t|
+    t.bigint "catalog_product_id"
     t.integer "cost_cents"
     t.datetime "created_at", null: false
     t.string "currency", default: "COP", null: false
@@ -205,6 +206,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_100100) do
     t.datetime "updated_at", null: false
     t.decimal "usage_at_service", precision: 12, scale: 2, null: false
     t.bigint "vehicle_id", null: false
+    t.index ["catalog_product_id"], name: "index_maintenance_records_on_catalog_product_id"
     t.index ["part_type_id"], name: "index_maintenance_records_on_part_type_id"
     t.index ["recorded_by_organization_id"], name: "index_maintenance_records_on_recorded_by_organization_id"
     t.index ["recorded_by_user_id"], name: "index_maintenance_records_on_recorded_by_user_id"
@@ -368,6 +370,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_100100) do
   add_foreign_key "diagnostics_observations", "part_types"
   add_foreign_key "identity_memberships", "identity_organizations", column: "organization_id"
   add_foreign_key "identity_memberships", "users"
+  add_foreign_key "maintenance_records", "catalog_products", on_delete: :nullify
   add_foreign_key "maintenance_records", "identity_organizations", column: "recorded_by_organization_id"
   add_foreign_key "maintenance_records", "part_types"
   add_foreign_key "maintenance_records", "users", column: "recorded_by_user_id"
