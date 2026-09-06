@@ -9,6 +9,14 @@ module MaintenanceRecordSerializer
       performedOn: record.performed_on,
       usageAtService: record.usage_at_service,
       partBrand: record.part_brand,
+      # Cuando el repuesto salio del catalogo, la marca esta normalizada y se
+      # sabe cual fue exactamente. Si no, part_brand es texto libre.
+      catalogProduct: record.catalog_product && {
+        id: record.catalog_product_id,
+        brand: record.catalog_product.brand,
+        sku: record.catalog_product.sku,
+        name: record.catalog_product.name
+      },
       costCents: record.cost_cents,
       currency: record.currency,
       notes: record.notes,

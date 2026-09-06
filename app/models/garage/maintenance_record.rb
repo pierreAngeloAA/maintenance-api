@@ -19,10 +19,23 @@ module Garage
     belongs_to :recorded_by_organization,
       class_name: "Identity::Organization", optional: true
 
+    # El repuesto concreto que se instalo, cuando salio del catalogo de la app.
+    # Es lo que convierte "DID", "did" y "D.I.D." en la misma marca y permite
+    # preguntar cuanto duro *esa* marca, en *esa* ciudad, en *ese* vehiculo.
+    belongs_to :catalog_product, class_name: "Catalog::Product", optional: true
+
     enum :source, SOURCES, validate: true, prefix: true
 
     # La procedencia se fija al crear y no se reescribe despues.
     before_validation :record_provenance, on: :create
+
+    # La marca se copia del producto, no se referencia: si el almacen borra el
+    # producto manana, el historial del vehiculo tiene que sobrevivir.
+    before_validation :copy_brand_from_product
+
+    validate :product_matches_part_type
+
+    scope :from_catalog, -> { where.not(catalog_product_id: nil) }
 
     validates :performed_on, presence: true
     validates :usage_at_service, presence: true, numericality: { greater_than_or_equal_to: 0 }
@@ -45,6 +58,21 @@ module Garage
       self.recorded_by_user ||= Current.user
       self.recorded_by_organization ||= Current.organization
       self.source = recorded_by_organization ? "workshop" : "owner"
+    end
+
+    def copy_brand_from_product
+      return if catalog_product.nil?
+
+      self.part_brand = catalog_product.brand
+    end
+
+    # Registrar unas pastillas como si fueran una cadena ensuciaria justo el
+    # dato que hace valioso este enlace.
+    def product_matches_part_type
+      return if catalog_product.nil? || catalog_product.part_type_id.nil?
+      return if catalog_product.part_type_id == part_type_id
+
+      errors.add(:catalog_product, :inclusion)
     end
 
     def performed_on_is_not_in_the_future
