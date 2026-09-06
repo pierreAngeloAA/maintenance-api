@@ -10,9 +10,111 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_000300) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_015223) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "diagnostics_inspection_items", force: :cascade do |t|
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "label", null: false
+    t.decimal "maximum", precision: 10, scale: 2
+    t.decimal "minimum", precision: 10, scale: 2
+    t.bigint "part_type_id"
+    t.string "phase", null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "template_id", null: false
+    t.string "unit"
+    t.datetime "updated_at", null: false
+    t.string "value_type", null: false
+    t.index ["part_type_id"], name: "index_diagnostics_inspection_items_on_part_type_id"
+    t.index ["template_id", "code"], name: "index_diagnostics_inspection_items_on_template_id_and_code", unique: true
+    t.index ["template_id", "phase", "position"], name: "index_inspection_items_on_template_phase_position"
+    t.index ["template_id"], name: "index_diagnostics_inspection_items_on_template_id"
+  end
+
+  create_table "diagnostics_inspection_templates", force: :cascade do |t|
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.datetime "published_at"
+    t.datetime "updated_at", null: false
+    t.string "vehicle_type", null: false
+    t.integer "version", null: false
+    t.index ["code", "version"], name: "index_diagnostics_inspection_templates_on_code_and_version", unique: true
+    t.index ["vehicle_type", "published_at"], name: "idx_on_vehicle_type_published_at_d6de948541"
+  end
+
+  create_table "diagnostics_inspections", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "duration_seconds"
+    t.decimal "latitude", precision: 9, scale: 6
+    t.decimal "longitude", precision: 9, scale: 6
+    t.bigint "organization_id", null: false
+    t.datetime "performed_at"
+    t.bigint "service_order_id"
+    t.datetime "started_at", null: false
+    t.string "status", default: "in_progress", null: false
+    t.text "summary"
+    t.bigint "technician_user_id", null: false
+    t.bigint "template_id", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "usage_value", precision: 12, scale: 2, null: false
+    t.bigint "vehicle_id", null: false
+    t.index ["organization_id"], name: "index_diagnostics_inspections_on_organization_id"
+    t.index ["service_order_id"], name: "index_diagnostics_inspections_on_service_order_id"
+    t.index ["status"], name: "index_diagnostics_inspections_on_status"
+    t.index ["technician_user_id"], name: "index_diagnostics_inspections_on_technician_user_id"
+    t.index ["template_id"], name: "index_diagnostics_inspections_on_template_id"
+    t.index ["vehicle_id", "performed_at"], name: "index_diagnostics_inspections_on_vehicle_id_and_performed_at"
+    t.index ["vehicle_id"], name: "index_diagnostics_inspections_on_vehicle_id"
+  end
+
+  create_table "diagnostics_observations", force: :cascade do |t|
+    t.boolean "boolean_value"
+    t.datetime "created_at", null: false
+    t.date "date_value"
+    t.bigint "inspection_id", null: false
+    t.bigint "item_id", null: false
+    t.text "notes"
+    t.decimal "numeric_value", precision: 10, scale: 2
+    t.bigint "part_type_id"
+    t.integer "scale_value"
+    t.string "severity"
+    t.datetime "updated_at", null: false
+    t.index ["inspection_id", "item_id"], name: "index_diagnostics_observations_on_inspection_id_and_item_id", unique: true
+    t.index ["inspection_id"], name: "index_diagnostics_observations_on_inspection_id"
+    t.index ["item_id"], name: "index_diagnostics_observations_on_item_id"
+    t.index ["part_type_id"], name: "index_diagnostics_observations_on_part_type_id"
+    t.index ["severity"], name: "index_diagnostics_observations_on_severity"
+  end
 
   create_table "identity_memberships", force: :cascade do |t|
     t.datetime "accepted_at"
@@ -203,6 +305,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_000300) do
     t.index ["vin"], name: "index_vehicles_on_vin", unique: true, where: "(vin IS NOT NULL)"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "diagnostics_inspection_items", "diagnostics_inspection_templates", column: "template_id"
+  add_foreign_key "diagnostics_inspection_items", "part_types"
+  add_foreign_key "diagnostics_inspections", "diagnostics_inspection_templates", column: "template_id"
+  add_foreign_key "diagnostics_inspections", "identity_organizations", column: "organization_id"
+  add_foreign_key "diagnostics_inspections", "services_orders", column: "service_order_id"
+  add_foreign_key "diagnostics_inspections", "users", column: "technician_user_id"
+  add_foreign_key "diagnostics_inspections", "vehicles"
+  add_foreign_key "diagnostics_observations", "diagnostics_inspection_items", column: "item_id"
+  add_foreign_key "diagnostics_observations", "diagnostics_inspections", column: "inspection_id"
+  add_foreign_key "diagnostics_observations", "part_types"
   add_foreign_key "identity_memberships", "identity_organizations", column: "organization_id"
   add_foreign_key "identity_memberships", "users"
   add_foreign_key "maintenance_records", "identity_organizations", column: "recorded_by_organization_id"
