@@ -76,6 +76,55 @@ RSpec.describe "Api::V1::Store::Products", type: :request do
     expect(json["errors"]).to have_key("unitPriceCents")
   end
 
+  describe "vida util y garantia" do
+    let(:durables) do
+      { name: "Banda de repartición", brand: "Gates", unitPriceCents: 30_000_000,
+        expectedLifeUsageValue: 60_000, expectedLifeUsageUnit: "km",
+        expectedLifeMonths: 48, warrantyUsageValue: 20_000,
+        warrantyUsageUnit: "km", warrantyMonths: 12 }
+    end
+
+    it "guarda cuanto dura el producto y que garantia tiene" do
+      post "/api/v1/store/products", params: { product: durables },
+        as: :json, headers: headers
+
+      expect(response).to have_http_status(:created)
+      expect(json["expectedLife"]).to eq(
+        "usageValue" => 60_000, "usageUnit" => "km", "months" => 48
+      )
+      expect(json["warranty"]).to eq(
+        "usageValue" => 20_000, "usageUnit" => "km", "months" => 12
+      )
+    end
+
+    # Nulo dice "no declara garantia" de una sola lectura, sin revisar tres
+    # llaves sueltas.
+    it "devuelve nulo cuando el producto no declara nada" do
+      post "/api/v1/store/products", params: attributes, as: :json, headers: headers
+
+      expect(json["expectedLife"]).to be_nil
+      expect(json["warranty"]).to be_nil
+    end
+
+    it "explica que la unidad de uso esta mal" do
+      post "/api/v1/store/products",
+        params: { product: durables.merge(warrantyUsageUnit: "millas") },
+        as: :json, headers: headers
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(json["errors"]).to have_key("warrantyUsageUnit")
+    end
+
+    it "deja corregir la garantia de un producto ya publicado" do
+      product = create(:product, :con_garantia, organization: store)
+
+      patch "/api/v1/store/products/#{product.id}",
+        params: { product: { warrantyMonths: 24 } }, as: :json, headers: headers
+
+      expect(json["warranty"]).to include("months" => 24)
+    end
+  end
+
   # El catalogo de otro almacen no existe para este.
   it "no deja editar el producto de otro almacen" do
     patch "/api/v1/store/products/#{create(:product).id}",
