@@ -56,7 +56,10 @@ Rails.application.routes.draw do
         resources :service_offers, only: [ :index, :update, :destroy ]
         resources :service_orders, only: [ :index, :update ]
 
-        # El taller compra repuestos para sus trabajos.
+        # El taller compra repuestos para sus trabajos. Su vitrina no cuelga de
+        # un vehiculo como la del cliente: compra para un trabajo, muchas veces
+        # de un vehiculo que no esta registrado en la plataforma.
+        resources :products, only: :index
         resources :orders, only: [ :index, :create ]
 
         # La visita de 30 minutos. Las mediciones se guardan una por una a
