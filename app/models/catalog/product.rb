@@ -29,6 +29,16 @@ module Catalog
     # Lo que un cliente puede comprar hoy.
     scope :available, -> { published.in_stock }
 
+    # La busqueda del mostrador: el taller escribe "bosch" y espera que algo
+    # aparezca. ILIKE sobre nombre y marca alcanza para el tamano de catalogo de
+    # hoy; el dia que no alcance entra un indice de texto completo, no un LIKE
+    # mas grande. El termino se escapa: un "%" suelto no puede volverse comodin.
+    scope :search, ->(term) {
+      pattern = "%#{sanitize_sql_like(term.to_s.strip)}%"
+
+      where("name ILIKE :term OR brand ILIKE :term", term: pattern)
+    }
+
     # Los productos que sirven para un vehiculo: los que declaran compatibilidad
     # con el, mas los universales. Un producto sin ningun fitment es universal
     # (aceite, liquido de frenos), no un producto incompleto.
