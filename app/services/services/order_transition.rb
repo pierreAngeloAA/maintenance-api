@@ -18,6 +18,7 @@ module Services
 
       ActiveRecord::Base.transaction do
         order.update!(status: next_status, **timestamps)
+        sync_request
         close_out if order.final?
       end
 
@@ -34,6 +35,15 @@ module Services
       when "completed" then { completed_at: Time.current }
       else {}
       end
+    end
+
+    # La orden es del taller; la solicitud es lo que ve el cliente. Si solo se
+    # mueve la orden, el cliente sigue viendo "asignado" mientras el tecnico ya
+    # esta con las manos en su moto.
+    def sync_request
+      return unless next_status == "in_progress"
+
+      order.request.update!(status: "in_progress")
     end
 
     def close_out
