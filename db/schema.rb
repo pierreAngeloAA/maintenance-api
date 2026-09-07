@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_120200) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_07_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -61,6 +61,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_120200) do
     t.datetime "created_at", null: false
     t.string "currency", default: "COP", null: false
     t.text "description"
+    t.integer "expected_life_months"
+    t.string "expected_life_usage_unit"
+    t.integer "expected_life_usage_value"
     t.string "name", null: false
     t.bigint "organization_id", null: false
     t.bigint "part_type_id"
@@ -69,6 +72,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_120200) do
     t.integer "stock_quantity", default: 0, null: false
     t.integer "unit_price_cents", null: false
     t.datetime "updated_at", null: false
+    t.integer "warranty_months"
+    t.string "warranty_usage_unit"
+    t.integer "warranty_usage_value"
     t.index ["brand"], name: "index_catalog_products_on_brand"
     t.index ["organization_id", "sku"], name: "index_catalog_products_on_organization_id_and_sku", unique: true, where: "(sku IS NOT NULL)"
     t.index ["organization_id", "status"], name: "index_catalog_products_on_organization_id_and_status"

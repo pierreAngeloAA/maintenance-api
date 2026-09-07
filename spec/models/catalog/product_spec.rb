@@ -91,6 +91,83 @@ RSpec.describe Catalog::Product, type: :model do
     end
   end
 
+  describe "vida util" do
+    it "es opcional: no todo producto declara cuanto dura" do
+      expect(build(:product, expected_life_usage_value: nil, expected_life_months: nil)).to be_valid
+    end
+
+    it "acepta duracion por uso y por tiempo a la vez" do
+      product = build(:product, :con_vida_util)
+
+      expect(product).to be_valid
+      expect(product.expected_life_usage_value).to eq(40_000)
+      expect(product.expected_life_months).to eq(24)
+    end
+
+    # Un numero sin unidad no significa nada: 40.000 puede ser km u horas de
+    # motor, y la comparacion contra el historial de uso dependeria de adivinar.
+    it "rechaza un valor de uso sin unidad" do
+      expect(build(:product, expected_life_usage_value: 40_000,
+                             expected_life_usage_unit: nil)).not_to be_valid
+    end
+
+    it "rechaza una unidad de uso que no existe" do
+      expect(build(:product, expected_life_usage_value: 40_000,
+                             expected_life_usage_unit: "millas")).not_to be_valid
+    end
+
+    it "rechaza una duracion de cero o negativa" do
+      expect(build(:product, expected_life_months: 0)).not_to be_valid
+      expect(build(:product, expected_life_usage_value: -1)).not_to be_valid
+    end
+
+    # Una unidad suelta es basura, no un error del que la manda: se limpia.
+    it "descarta la unidad cuando no hay valor de uso" do
+      product = create(:product, expected_life_usage_value: nil,
+                                 expected_life_usage_unit: "km")
+
+      expect(product.expected_life_usage_unit).to be_nil
+    end
+  end
+
+  describe "garantia" do
+    # Vida util y garantia son cosas distintas: un amortiguador puede durar
+    # 60.000 km y tener 12 meses de garantia.
+    it "es independiente de la vida util" do
+      product = build(:product, :con_vida_util, :con_garantia)
+
+      expect(product.expected_life_usage_value).to eq(40_000)
+      expect(product.warranty_usage_value).to eq(20_000)
+    end
+
+    it "un producto sin meses ni kilometros no tiene garantia" do
+      expect(build(:product)).not_to be_warranty
+    end
+
+    it "basta con los meses para que tenga garantia" do
+      expect(build(:product, warranty_months: 12)).to be_warranty
+    end
+
+    it "basta con los kilometros para que tenga garantia" do
+      expect(build(:product, warranty_usage_value: 20_000,
+                             warranty_usage_unit: "km")).to be_warranty
+    end
+
+    it "rechaza un valor de uso sin unidad" do
+      expect(build(:product, warranty_usage_value: 20_000,
+                             warranty_usage_unit: nil)).not_to be_valid
+    end
+
+    it "rechaza una unidad de uso que no existe" do
+      expect(build(:product, warranty_usage_value: 20_000,
+                             warranty_usage_unit: "millas")).not_to be_valid
+    end
+
+    it "rechaza meses negativos" do
+      expect(build(:product, warranty_months: -1)).not_to be_valid
+    end
+  end
+
   it "se lleva sus compatibilidades al borrarse" do
     fitment = create(:fitment)
 
