@@ -44,7 +44,9 @@ module Api
         def product_params
           underscored_params.require(:product).permit(
             :part_type_id, :name, :brand, :sku, :description,
-            :unit_price_cents, :currency, :stock_quantity, :status
+            :unit_price_cents, :currency, :stock_quantity, :status,
+            :expected_life_usage_value, :expected_life_usage_unit, :expected_life_months,
+            :warranty_usage_value, :warranty_usage_unit, :warranty_months
           )
         end
       end
