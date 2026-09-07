@@ -54,4 +54,35 @@ RSpec.describe Services::OrderTransition do
 
     expect(order.request.reload.status).to eq("completed")
   end
+
+  # El servicio que ve el cliente y la orden que ve el taller son dos filas
+  # distintas. Si solo se mueve la orden, el cliente ve "asignado" mientras el
+  # tecnico ya esta trabajando en su moto.
+  describe "estado visible para el cliente" do
+    it "pasa la solicitud a en proceso cuando el taller arranca el trabajo" do
+      described_class.new(order, "in_progress").call
+
+      expect(order.request.reload.status).to eq("in_progress")
+    end
+
+    it "una solicitud en proceso ya no se puede tomar" do
+      described_class.new(order, "in_progress").call
+
+      expect(order.request.reload).not_to be_open
+    end
+
+    it "al cerrar el trabajo la solicitud queda completada" do
+      described_class.new(order, "in_progress").call
+      described_class.new(order.reload, "completed").call
+
+      expect(order.request.reload.status).to eq("completed")
+    end
+
+    it "cancelar desde en proceso deja la solicitud cancelada" do
+      described_class.new(order, "in_progress").call
+      described_class.new(order.reload, "canceled").call
+
+      expect(order.request.reload.status).to eq("canceled")
+    end
+  end
 end

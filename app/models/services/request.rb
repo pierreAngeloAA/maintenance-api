@@ -7,9 +7,18 @@ module Services
       quote: "quote"
     }.freeze
 
+    # El ciclo de vida que ve el cliente:
+    #
+    #   pending      la pidio y ningun taller la ha tomado. Es la unica que un
+    #                taller puede tomar.
+    #   assigned     un taller la tomo y va en camino.
+    #   in_progress  el taller esta trabajando en el vehiculo.
+    #   completed    el trabajo se cerro.
+    #   canceled     no se hizo.
     STATUSES = {
       pending: "pending",
       assigned: "assigned",
+      in_progress: "in_progress",
       completed: "completed",
       canceled: "canceled"
     }.freeze
